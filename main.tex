@@ -1,0 +1,111 @@
+\documentclass{MScthesisITEM}
+
+\usepackage{blindtext}
+\usepackage{hyperref}
+\usepackage{glossaries}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{url}
+
+\newcommand{\ttitle}{Unified Communication and WebRTC}
+\newcommand{\subjectname}{Telematics}
+\newcommand{\authorname}{Xiao Chen}
+\newcommand{\tprofessor}{Mazen Malek Shiaa, ITEM}
+\newcommand{\keywordnames}{WebRTC, AngularJs, Nodejs, SIP, WebSocket, Dialogic XMS}
+
+% PDF meta-data
+\hypersetup{pdftitle={\ttitle}}
+\hypersetup{pdfsubject=\subjectname}
+\hypersetup{pdfauthor=\authorname}
+\hypersetup{pdfkeywords=\keywordnames}
+
+\title{\ttitle} % The title of your assignement; NB use \newlinetitle to start a newline
+\author{\authorname} % Your firstname and lastname
+\professor{\tprofessor} % Affiliation = ITEM for instance
+\supervisor{\tprofessor}
+
+%% Uncomment the following in case you want subfigures; note that there will be a warning for the caption package
+% \let\subcaption\undefined
+% \let\subfloat\undefined
+% \usepackage[bf]{caption}
+% \usepackage{subcaption}
+
+\DeclareGraphicsExtensions{.pdf,.jpg}
+\graphicspath{{./figs/}}
+
+\loadglsentries{glossary}
+\makeglossaries
+
+\begin{document}
+\selectlanguage{english}
+\pagenumbering{roman}
+\pagestyle{plain}
+
+%% Only for the project
+\titleITEM
+
+%% Only for the master's thesis; for the project report the description is taken from It's Learning and added by the department
+\selectlanguage{english} % Change to 'norsk' if you are writing in Norwegian
+\input{problem_description}
+% \cleardoublepage
+
+%% There must be an abstract in English, even though the main text is in Norwegian
+\selectlanguage{english}
+\include{abstract_english}
+% \cleardoublepage
+\clearpage
+
+%% Only for the master's thesis; if the main text is in English and you can write Norwegian, there must be an abstract in Norwegian as well.A
+% \selectlanguage{norsk}
+% \include{abstract_norwegian}
+% \cleardoublepage
+
+\selectlanguage{english}% Change to 'norsk' if you are writing in Norwegian
+
+\include{preface}
+% \cleardoublepage
+\clearpage
+
+% similarly you may add a separate acknowledgments page
+\include{acknowledgment}
+\clearpage
+
+\tableofcontents*
+\cleardoublepage
+
+%% include if relevant
+\listoffigures
+\cleardoublepage
+
+%% include if relevant
+\listoftables
+\cleardoublepage
+
+%% include if relevant
+\listofalgorithms
+\addcontentsline{toc}{chapter}{List of Algorithms}
+\cleardoublepage
+
+%% include if relevant
+\printglossary[title=List of Symbols, style=long]
+\cleardoublepage
+\glsaddall[]
+
+%% include if relevant
+\printglossary[title=List of Acronyms,type=\acronymtype] % prints just the list of acronyms
+\cleardoublepage
+
+\pagenumbering{arabic}
+\pagestyle{ruled}
+
+\include{introduction}
+
+
+\renewcommand*{\bibname}{References}
+\nocite{*}
+\bibliographystyle{alpha}
+\bibliography{main}
+
+\include{appendix}
+
+\end{document} 
