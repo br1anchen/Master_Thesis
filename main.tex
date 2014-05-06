@@ -1,11 +1,10 @@
 \documentclass{MScthesisITEM}
 
-\usepackage{blindtext}
-\usepackage{hyperref}
-\usepackage{glossaries}
 \usepackage{graphicx}
 \usepackage{caption}
 \usepackage{url}
+\usepackage{hyperref}
+\usepackage{glossaries}
 
 \newcommand{\ttitle}{Unified Communication and WebRTC}
 \newcommand{\subjectname}{Telematics}
@@ -30,7 +29,7 @@
 % \usepackage[bf]{caption}
 % \usepackage{subcaption}
 
-\DeclareGraphicsExtensions{.pdf,.jpg}
+\DeclareGraphicsExtensions{.pdf,.jpg,.png}
 \graphicspath{{./figs/}}
 
 \loadglsentries{glossary}
@@ -99,6 +98,8 @@
 \pagestyle{ruled}
 
 \include{introduction}
+\include{system_development}
+\include{system_deployment}
 
 
 \renewcommand*{\bibname}{References}
