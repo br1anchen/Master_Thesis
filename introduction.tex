@@ -1,6 +1,6 @@
 \chapter{Introduction}
 \label{chp:intro}
-\noindent In this Chapter, introduction of \gls{webrtc} and \gls{sip} network will be covered. \gls{sip} is one of the \gls{voip} signaling protocols widely used in current internet telephony service which is the target telephony network integrated with \gls{webrtc} application system in this thesis.
+\noindent In this Chapter, introduction of \gls{webrtc} and \gls{sip} network will be covered. \gls{sip} is one of the \gls{voip} signaling protocols widely used in current internet telephony service which is also the target telephony network integrated with \gls{webrtc} application system in this thesis.
 
 \section{WebRTC}
 
@@ -13,8 +13,8 @@
 \par With the rapidly development of internet, more and more communication traffic is moving to web from the traditional telephony network. And in the recent decade, \gls{voip} network services are growing to the peek of the market capacity. Solution to integrate \gls{webrtc} and existing \gls{voip} network is the right approach the trend of the internet communication requirement.
 
 \subsection{WebRTC Network Structure}
-\noindent In the Figure\ref{fig:webrtc_network_finCandidate}\cite{html5rock:webrtc} showing how the \gls{ice} framework\footnote{ICE is a framework for connecting peers, such as two video chat clients.\cite{wiki:ice}} to find peer candidate through \gls{stun} server and its extension \gls{turn} server. The difference and usage of \gls{stun} server and \gls{turn} server will be discussed more detail in Chapter \ref{chp:sys_deploy}.
-\par \gls{webrtc} needs server to help users discover each other and exchange 'real world' details such as names. Then \gls{webrtc} client applications (peers) exchange network information. After that, peers exchange data about media such as video format and resolution. Finally, \gls{webrtc} client applications can traverse \gls{nat} gateways and firewalls.
+
+\noindent In the Figure\ref{fig:webrtc_network_finCandidate}\cite{html5rock:webrtc} showing how the \gls{ice} framework\footnote{ICE is a framework for connecting peers, such as two video chat clients.\cite{wiki:ice}} to find peer candidate through \gls{stun} server and its extension \gls{turn} server.
 
 \begin{figure}
 	\centering
@@ -30,9 +30,15 @@
   	\label{fig:telephony_network}
 \end{figure}
 
-\par Compare to the traditional telephony network which is shown in Figure\ref{fig:telephony_network}\cite{web:teleVSvoip}, the main difference between these two communication network is that \gls{webrtc} is \gls{p2p} communication, in \gls{stun} server scenario, after the signaling between end-peers, the media data are exchanged directly between tow peers, but in the traditional telephony, all the media data are transferred to \gls{pbx} and switches regarding to \gls{pstn}\footnote{The PSTN consists of telephone lines, fiber optic cables, microwave transmission links, cellular networks, communications satellites, and undersea telephone cables, all interconnected by switching centers, thus allowing any telephone in the world to communicate with any other. Originally a network of fixed-line analog telephone systems, the PSTN is now almost entirely digital in its core network and includes mobile and other networks, as well as fixed telephones.\cite{wiki:pstn}} then reach the other side of the peer. Even in \gls{turn} server scenario, the media stream is only relaying to the \gls{turn} then directly transfer to another peer, no switches involved.
+\par Initially, \gls{ice} tries to connect peers directly, with the lowest possible latency, via \gls{udp}. In this process, \gls{stun} servers have a single task: to enable a peer behind a \gls{nat} to find out its public address and port. If \gls{udp} fails, \gls{ice} tries \gls{tcp}: first \gls{http}, then \gls{https}. If direct connection fails—in particular, because of enterprise \gls{nat} traversal and firewalls—\gls{ice} uses an intermediary (relay) \gls{turn} server. In other words, \gls{ice} will first use \gls{stun} with \gls{udp} to directly connect peers and, if that fails, will fall back to a \gls{turn} relay server. The expression 'finding candidates' refers to the process of finding network interfaces and ports.\cite{html5rock:webrtc}
 
-\subsection{WebRTC Implementation APIs}
+\par The difference and usage of \gls{stun} server and \gls{turn} server will be discussed more detail in Chapter \ref{chp:sys_deploy}.
+
+\par \gls{webrtc} needs server to help users discover each other and exchange 'real world' details such as names. Then \gls{webrtc} client applications (peers) exchange network information. After that, peers exchange data about media such as video format and resolution. Finally, \gls{webrtc} client applications can traverse \gls{nat} gateways and firewalls.
+
+\par Compare to the traditional telephony network which is shown in Figure\ref{fig:telephony_network}\cite{web:teleVSvoip}, the main difference between these two communication network is that \gls{webrtc} is \gls{p2p} communication in \gls{stun} server scenario, after the signaling between end-peers, the media data are exchanged directly between tow peers. However, in the traditional telephony, all the media data are transferred to \gls{pbx} and switches regarding to \gls{pstn}\footnote{The PSTN consists of telephone lines, fiber optic cables, microwave transmission links, cellular networks, communications satellites, and undersea telephone cables, all interconnected by switching centers, thus allowing any telephone in the world to communicate with any other. Originally a network of fixed-line analog telephone systems, the PSTN is now almost entirely digital in its core network and includes mobile and other networks, as well as fixed telephones.\cite{wiki:pstn}} then reach the other side of the peer. Even in \gls{turn} server scenario for \gls{webrtc}, the media stream is only relaying to the \gls{turn} then directly transfer to another peer, no switches involved. Two server working scenario will be discussed in Chapter \ref{chp:sys_dev}.
+
+\subsection{WebRTC Implementation Steps}
 
 \begin{figure}
 	\centering
@@ -41,64 +47,97 @@
   	\label{fig:webrtc_4steps}
 \end{figure}
 
-\noindent There are four main steps to implement a \gls{webrtc} session. The Figure \ref{fig:webrtc_4steps} shows that the browser client need to obtain local media first, then set up a connection between the browser and the other peer through some signaling, after that attach the media and data channels to the connection, afterwards exchange the session description from each other. Finally the media stream will automatically exchange through the real-time peer to peer media channel.
+\noindent There are four main steps to implement a \gls{webrtc} session shown in Figure \ref{fig:webrtc_4steps}. The browser client need to obtain local media first, then set up a connection between the browser and the other peer through some signaling, after that attach the media and data channels to the connection, afterwards exchange the session description from each other. Finally the media stream will automatically exchange through the real-time peer to peer media channel.
 
-\par In order to obtain local media, the \gls{webrtc} \gls{api}s provide \textit{getUserMedia()} function to get the video and audio stream from user. For privacy reasons, a web application’s request for access to a user’s microphone or camera will only be granted after the browser has obtained permission from the user. \textit{getUserMedia()} function is currently available in Chrome, Opera and Firefox. Almost all of the \gls{webrtc} \gls{api}s are slightly different in different browsers, then this part will be discussed in the Chapter \ref{chp:sys_dev}. However, since \gls{webrtc} \gls{api}s is not standard \gls{api} yet, the prototype application in this thesis will not pay too much work-load on compatibility for different browsers platform.
-
-\par For setting up peer connection, the core of \gls{webrtc} is the \textit{RTCPeerConnection} \gls{api}, which sets up a connection between two peers. In this context, “peers” means two communication endpoints on the World Wide Web. Instead of requiring communication through a server, the communication is direct between the two entities. In the specific case of \gls{webrtc}, a peer connection is a direct media connection between two web browsers. This is particularly relevant when a multi-way communication such as a conference call is set up among three or more browsers. Each pair of browsers will require a single peer connection to join them, allowing for audio and video media to flow directly between the two peers. The system architecture regarding to this \gls{webrtc} factor will be discussed in later Chapter \ref{chp:sys_dev} since there is consideration between centralized media server network and mesh network architecture.
+\par Each step shown in the Figure \ref{fig:webrtc_4steps} is implemented by some \gls{webrtc} \gls{api}s. More detail about how to use \gls{webrtc} \gls{api}s to implement these steps will be covered in Chapter \ref{chp:sys_dev}. The \gls{webrtc} architecture is shown in Figure \ref{fig:webrtc_api_arch}, the main focus in this thesis will be Web \gls{api} part and transport part because Web \gls{api} is the tool to implement the \gls{webrtc} application and transport part is the key for \gls{webrtc} application to communicate with application server, media server and other end peer in the system. 
 
 \begin{figure}
 	\centering
-    	\includegraphics[width=0.60\textheight,natwidth=610,natheight=642]{figs/webrtc_diagram.png}
-  	\caption{WebRTC Set up a call Process}
-  	\label{fig:webrtc_diagram}
+    	\includegraphics[width=0.60\textheight,natwidth=610,natheight=642]{figs/WebRTCapiPic.png}
+  	\caption{\gls{webrtc} architecture \cite{org:webrtc}}
+  	\label{fig:webrtc_api_arch}
 \end{figure}
 
-\par To establish this connection requires a new \textit{RTCPeerConnection} object. The only input to the \textit{RTCPeerConnection} constructor method is a configuration object containing the information that \gls{ice}, will use to “punch holes” through intervening \gls{nat} devices and firewalls. There are two \gls{api}s to handle the  \textit{IceCandidate} object which contains \gls{ice} information data. One is \textit{onicecandidate} listener to trigger the function to handle the new \textit{IceCandidate} data object. The other one is \textit{addIceCandidate} function to add the new \textit{IceCandidate} data object to the remote/local peer connection session description field.
+\par Besides \gls{webrtc} \gls{api}s, signaling is the other important factor in the system. \gls{webrtc} uses \textit{RTCPeerConnection} (more about this \gls{api} will be discussed in Chapter \ref{chp:sys_dev}) to communicate streaming data between browsers, but also needs a mechanism to coordinate communication and to send control messages, a process known as signaling. Signaling methods and protocols are not specified by \gls{webrtc} by Google purpose, so signaling is not part of the \textit{RTCPeerConnection} \gls{api}.
 
-\par \gls{ice} is a framework for connecting peers, such as two video chat clients. Initially, \gls{ice} tries to connect peers directly, with the lowest possible latency, via \gls{udp}. In this process, \gls{stun} servers have a single task: to enable a peer behind a \gls{nat} to find out its public address and port. If \gls{udp} fails, \gls{ice} tries \gls{tcp}: first \gls{http}, then \gls{https}. If direct connection fails—in particular, because of enterprise \gls{nat} traversal and firewalls—\gls{ice} uses an intermediary (relay) \gls{turn} server. In other words, \gls{ice} will first use \gls{stun} with \gls{udp} to directly connect peers and, if that fails, will fall back to a \gls{turn} relay server. The expression 'finding candidates' refers to the process of finding network interfaces and ports.\cite{html5rock:webrtc} 
+\par Instead, \gls{webrtc} app developers can choose whatever messaging protocol they prefer, such as \gls{sip} or \gls{xmpp}, and any appropriate duplex (two-way) communication channel. The prototype application in this thesis will use WebSocket\footnote{WebSocket is a protocol providing full-duplex communications channels over a single TCP connection.\cite{wiki:websocket}} as signaling between \gls{webrtc} browser end point and keep use \gls{sip} as signaling for \gls{sip} end point (mobile/fixed phone based on \gls{pstn} in this case).
 
-\par Once the \textit{RTCPeerConnection} is established, the client need configure where the media or data to store and display if it is necessary. In the prototype application of this thesis, media stream will be displayed in a \gls{html5} tag called \textit{<video>}. It will only be shown when there is media stream in \textit{<video>} tag source.
+\noindent Signaling is used to exchange three types of information\cite{html5rock:webrtc}:
 
-\par In order to make the \gls{webrtc} \gls{stun} server or \gls{turn} server to generate the \gls{ice} candidate for the peer client, the caller \textit{RTCPeerConnection} need run \textit{createOffer()} function and the callee need run \textit{createAnswer()} function  to ask the \gls{stun}/\gls{turn} server to find the path for each other peer.There is one calling process shown in Figure\ref{fig:webrtc_diagram}, it is a set up call process from caller peer.
+\begin{itemize}[topsep=-1em,parsep=0em,itemsep=0em]
+ \item Session control messages: to initialize or close communication and report errors.
+ \item Network configuration: to the outside world, the computer's IP address and port.
+ \item Media capabilities: the codecs and resolutions can be handled by the browser and the browser it wants to communicate with.
+\end{itemize}
 
-\par \gls{webrtc} clients (known as peers) also need to ascertain and exchange local and remote audio and video media information, such as resolution and codec capabilities. Signaling to exchange media configuration information proceeds by exchanging an offer and an answer using the \gls{sdp}. The \textit{createOffer()} function and \textit{createAnswer()} function both have callback function to handle the \gls{sdp} either to call \textit{setLocalDescription()} by caller or call \textit{setRemoteDescription()} by callee when callee gets the caller's \gls{sdp} from \gls{webrtc} offer. The Log Snippet\ref{log:webrtc_answer_sdp} shown is the \gls{webrtc} answer \gls{sdp} from the callee when the callee end-point decide to accept this conversion session.
+\par The exchange of information via signaling must have completed successfully before peer-to-peer streaming can begin. For the prototype application in this thesis, the signaling has two mechanisms, one is for \gls{webrtc} browser clients and the other is for \gls{sip} clients, it will be explained in Chapter \ref{chp:sys_dev}.
 
-\begin{algorithm}[h]
-\floatname{algorithm}{Log Snippet}
-  \caption{Sample \gls{webrtc} Answer \gls{sdp}}
-  \label{log:webrtc_answer_sdp}
-  \begin{verbatim}
-sdp: v=0
-o=xmserver 1399363527 1399363528 IN IP4 10.254.9.135
-s=xmserver
-c=IN IP4 10.254.9.135
-t=0 0
-a=ice-lite
-m=audio 49152 RTP/SAVPF 0 126
-a=rtpmap:0 PCMU/8000
-a=sendrecv
-a=rtcp:49153
-a=candidate:1 1 UDP 2130706431 10.254.9.135 49152 typ host
-a=candidate:1 2 UDP 2130706430 10.254.9.135 49153 typ host
-...
-a=acfg:1 t=1
-a=rtpmap:126 telephone-event/8000
-a=fmtp:126 0-15
-m=video 57344 RTP/SAVPF 100
-b=AS:1000
-a=rtpmap:100 VP8/90000
-a=fmtp:100 max-fr=30; max-fs=1200
-a=sendrecv
-a=rtcp:57345
-a=rtcp-fb:100 ccm fir
-a=rtcp-fb:100 nack
-a=rtcp-fb:100 nack pli
-a=rtcp-fb:100 goog-remb
-a=candidate:2 1 UDP 2130706431 10.254.9.135 57344 typ host
-a=candidate:2 2 UDP 2130706430 10.254.9.135 57345 typ host
-...
- \end{verbatim}
-\end{algorithm}
+\section{SIP}
+\noindent The prototype application in this thesis will be integrated with \gls{pstn} through \gls{sip} server. Therefore the application server implemented in this system will use \gls{sip} signaling to communicate with \gls{sip} server to handle the signaling configuration with mobile/fixed phone end-point.
 
-\section{SIP Network}
+\subsection{What is SIP?}
+\noindent The \gls{sip} is a signaling communications protocol, widely used for controlling multimedia communication sessions such as voice and video calls over \gls{ip} networks.
+
+\par The protocol defines the messages that are sent between endpoints which govern establishment, termination and other essential elements of a call. \gls{sip} can be used for creating, modifying and terminating sessions consisting of one or several media streams. \gls{sip} can be used for two-party (unicast) or multiparty (multicast) sessions. Other \gls{sip} applications include video conferencing, streaming multimedia distribution, instant messaging, presence information, file transfer, fax over \gls{ip} and online games.\cite{wiki:sip}
+
+\par \gls{sip} works in conjunction with several other application layer protocols that identify and carry the session media. Media identification and negotiation is achieved with the \gls{sdp}. It is different key filed format than the \gls{webrtc} \gls{sdp}. For the transmission of media streams (voice, video) \gls{sdp} typically employs the \gls{rtp} or \gls{srtp}. For secure transmissions of \gls{sip} messages, the protocol may be encrypted with \gls{tls}.
+
+\subsection{SIP Network Elements}
+\noindent In normal \gls{sip} network, \gls{sip} defines user-agents as well as several types of server network elements. Two \gls{sip} endpoints can communicate without any intervening \gls{sip} infrastructure. However, this approach is often impractical for a public service, which needs directory services to locate available nodes on the network. In the system implemented of this thesis, the application server will play as 'User Agent', 'Registrar' and 'Gateway' elements in the network.
+
+\noindent \textbf{User Agent}\cite{wiki:sip}:
+\par A \gls{sip} \gls{ua} is a logical network end-point used to create or receive \gls{sip} messages and thereby manage a \gls{sip} session. A \gls{sip} \gls{ua} can perform the role of a \gls{uac}, which sends \gls{sip} requests, and the \gls{uas}, which receives the requests and returns a \gls{sip} response. These roles of \gls{uac} and \gls{uas} only last for the duration of a \gls{sip} transaction.
+
+\noindent \textbf{Registrar}\cite{wiki:sip}:
+\par A registrar is a \gls{sip} endpoint that accepts REGISTER requests and places the information it receives in those requests into a location service for the domain it handles. The location service links one or more \gls{ip} addresses to the \gls{sip} \gls{uri} of the registering agent. The \gls{uri} uses the sip: scheme, although other protocol schemes are possible, such as tel:. More than one user agent can register at the same \gls{uri}, with the result that all registered user agents receive the calls to the \gls{uri}.
+
+\noindent \textbf{Gateway}\cite{wiki:sip}:
+\par Gateways can be used to interface a \gls{sip} network to other networks, such as the \gls{pstn}, which use different protocols or technologies. In the prototype application, the application server is the gateway to interface a \gls{webrtc} WebSocket network (The working process will be covered in Chapter \ref{chp:sys_dev}).
+
+\subsection{SIP messages}
+\noindent Since the application server in this system will be used as \gls{sip} \gls{ua} and \gls{sip} Gateway, it will send \gls{sip} message request to \gls{sip} server and receive \gls{sip} message request from the \gls{sip} server.
+
+\par One of the wonderful things about \gls{sip} is that it is a text-based protocol modeled on the request/response model used in HTTP.  This makes it easy to debug because the messages are easy to construct and easy to see.  Contrasted with H.323\footnote{H.323 is a recommendation from the ITU Telecommunication Standardization Sector (ITU-T) that defines the protocols to provide audio-visual communication sessions on any packet network. The H.323 standard addresses call signaling and control, multimedia transport and control, and bandwidth control for point-to-point and multi-point conferences.\cite{wiki:h323}}, SIP is an exceedingly simple protocol.  Nevertheless, it has enough powerful features to model the behavior of a very complex traditional telephone \gls{pbx}.\cite{networkworld:sip}
+
+\par There are two different types of \gls{sip} messages: requests and responses. The first line of a request has a method, defining the nature of the request, and a Request-URI, indicating where the request should be sent.The first line of a response has a response code.
+
+\noindent For sip requests, regarding to RFC 3261\cite{rfc:3261}, the application server in the system will use following \gls{sip} messages:
+
+\begin{itemize}[topsep=-1em,parsep=0em,itemsep=0em]
+ \item \textbf{REGISTER:} Used by a \gls{ua} to indicate its current \gls{ip} address and the \gls{url}s for which it would like to receive calls.
+ \item \textbf{INVITE:} Used to establish a media session between user agents.
+ \item \textbf{ACK:} Confirms reliable message exchanges.
+ \item \textbf{CANCEL:} Terminates a pending request.
+ \item \textbf{BYE:} Terminates a session between two users in a conference.
+\end{itemize}
+
+\noindent The \gls{sip} response types defined in RFC 3261 will be listened by application server in the following response codes\cite{wiki:sip_response_codes}:
+
+\begin{itemize}[topsep=-1em,parsep=0em,itemsep=0em]
+ \item \textbf{100 Trying:} Extended search being performed may take a significant time so a forking proxy must send a 100 Trying response.
+ \item \textbf{180 Ringing:} Destination user agent received INVITE, and is alerting user of call.
+ \item \textbf{200 OK:} Indicates the request was successful.
+ \item \textbf{400 Bad Request:} The request could not be understood due to malformed syntax.
+ \item \textbf{401 Unauthorized:} The request requires user authentication. This response is issued by \gls{uas}s and registrars.
+ \item \textbf{408 Request Timeout:} Couldn't find the user in time. The server could not produce a response within a suitable amount of time, for example, if it could not determine the location of the user in time. The client MAY repeat the request without modifications at any later time.
+ \item \textbf{480 Temporarily Unavailable:} Callee currently unavailable.
+ \item \textbf{486 Busy Here:} Callee is busy.
+\end{itemize}
+
+\par By listening these \gls{sip} response, the application will send request to either \gls{webrtc} browser client or \gls{sip} client to play as the gateway role in the system. This gateway mechanism will be introduced in Chapter \ref{chp:sys_dev}.
+
+\section{Prototype System Working Flow}
+\noindent The main purpose of this thesis is to make unified communication solution with \gls{webrtc} technology. 
+\par To connect with the traditional telephony network, the \gls{voip} system bridges the \gls{pstn} and the \gls{ip} network. \gls{voip} systems employ session control and signaling protocols to control the signaling, set-up, and tear-down of calls. They transport audio streams over \gls{ip} networks using special media delivery protocols that encode voice, audio, video with audio codecs, and video codecs as Digital audio by streaming media. In this prototype, \gls{sip} signaling is used because of its widely usage and current target \gls{pstn} has \gls{sip} server support.
+
+\begin{figure}
+	\centering
+    	\includegraphics[width=0.60\textheight,natwidth=610,natheight=642]{figs/system_work_flow.png}
+  	\caption{Prototype System Working Diagram \cite{inbook:sys_work_diagram}}
+  	\label{fig:sys_work_diagram}
+\end{figure}
+
+\par The Figure \ref{fig:sys_work_diagram} shows the basic working flow of the prototype system. The Web Server is the application server in the system, it mainly bridges the \gls{webrtc} browser client with other \gls{webrtc} clients and the \gls{sip} network. The \gls{sip} server bridges the \gls{sip} network and \gls{pstn} network or traditional telephony network. And also the Media Relay server relay all the media stream from different end clients, in the prototype system, it is a media server provided by Dialogic, the Network Fuel company, which is called PowerMedia XMS v2.1\footnote{PowerMedia XMS is pre-integrated with a variety of application servers and signaling gateways with HTTP-to-SIP (H2S) functionality and rapidly integrates with others using its web API or standard interfaces.} PowerMedia XMS acts as a WebRTC Media Gateway to mediate WebRTC media-plane differences from those of typical existing VoIP networks including encryption interworking, transcoding, and client-based NAT traversal support. The reason to use this media server is to avoid hard-code transition between \gls{webrtc} \gls{sdp} and \gls{sip} \gls{sdp}. Then the end client no matter it is \gls{webrtc} client or \gls{sip} client, they will communicate with the same signaling client for their aspect.
+\par Moreover, since the media server is used in this case, during the multiple end-point conversation, each end-point will only exchange their media stream to the single end-point on the media server (PowerMedia XMS server), it will make light client and centralized server control. The benefit of this system architecture will be discussed more in the Chapter \ref{chp:sys_dev}.
+
+\par Therefore, in the Figure \ref{fig:sys_work_diagram}, all the end point keep using their own original signaling protocol to communicate with different server in order to reach different scope end point.
