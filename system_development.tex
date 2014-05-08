@@ -1,6 +1,59 @@
 \chapter{System Development}
 \label{chp:sys_dev}
 
+\noindent In this Chapter, it will cover research about current \gls{webrtc} usage on real-time communication scenario and development progress of the prototype system along with explanation and analysis.
+
+\section{WebRTC Current Usage}
+
+\noindent In May 2011, Google released an open source project for browser-based real-time communication known as \gls{webrtc}. This has been followed by ongoing work to standardise the relevant protocols in the \gls{ietf} and browser \gls{api}s in the \gls{w3c}. Then more and more web application are using it in different ways. There are mainly two part of the \gls{webrtc} \gls{api}s could be used separately or cooperatively in the different web application.
+
+\begin{itemize}[topsep=-1em,parsep=0em,itemsep=0em]
+ \item \textbf{MediaStream:} get access to data streams, such as from the user's camera and microphone.
+ \item \textbf{RTCPeerConnection:} audio or video calling, with facilities for encryption and bandwidth management.
+ \item \textbf{RTCDataChannel:} peer-to-peer communication of generic data.
+\end{itemize}
+
+\par Because most of the application need to get the user's camera view and microphone sound, the \textit{MediaStream} \gls{api} is used always in real-time communication application. Normally \textit{MediaStream} \gls{api} will be used along with \textit{RTCPeerConnection} for showing remote peer media source content. The following business usage cases, 'Tropo' and 'Uberconference', are in this category.
+
+\clearpage
+
+\subsection{Tropo}
+
+\par Tropo is an application platform that enables web developers to write communication applications in the languages they already use, Groovy\footnote{Groovy is an object-oriented programming language for the Java platform. It is a dynamic language with features similar to those of Python, Ruby, Perl, and Smalltalk.\cite{wiki:groovy}}, Ruby\footnote{Ruby is a dynamic, reflective, object-oriented, general-purpose programming language. It was designed and developed in the mid-1990s by Yukihiro "Matz" Matsumoto in Japan.\cite{wiki:ruby}}, \gls{php}\footnote{PHP is a server-side scripting language designed for web development but also used as a general-purpose programming language.\cite{wiki:php}}, Python\footnote{Python is a widely used general-purpose, high-level programming language.\cite{wiki:python}} and JavaScript\footnote{JavaScript (JS) is a dynamic computer programming language.\cite{wiki:js}}, or use a Web \gls{api} which will talk with an application running on your own server through the use of \gls{http} and \gls{json}, feeding requests and processing responses back and forth as needed. Tropo is in the cloud, so it manages the headaches of dealing with infrastructure and keeping applications up and running at enterprise-grade. With Tropo, developers can build and deploy voice and telephony applications, or add voice to existing applications.\cite{web:tropo}
+
+\par It has some advanced features, like 'Phone numbers around the world', 'Text messaging', 'Transcription', 'Call Recording', 'Conferencing', 'Text to Speech' and 'Speech Recognition'. The prototype system in this thesis will provide similar functions like 'Text messaging' and 'Conferencing'. Since Tropo is a cloud application platform, it generates its own scripts based on programming language to provide developer possibility to easily use \gls{webrtc} to communicate with other kinds of network rather than \gls{ip} network. The functions Tropo provided is implemented in application server in the prototype, the application server will handle both the \gls{sip} stack and \gls{webrtc} stack in the system. For the client scripts will be host on the same application server for browser user to access and use.
+
+\subsection{Uberconference}
+
+\par UberConference fixes all the broken and outdated aspects of traditional conference calling, making it a more productive business tool, and transforming an industry that hasn't seen real innovation in decades. UberConference gives a visual interface to every conference call so callers can know who's on a call and who's speaking at any time, in addition to making many other features, such as Hangouts\footnote{Google Hangouts is an instant messaging and video chat platform developed by Google, which launched on May 15, 2013 during the keynote of its I/O development conference.\cite{wiki:hangouts}} integration and screen sharing, easy-to-use with the click of a button. Built by the teams that brought Google Voice\footnote{Google Voice (formerly GrandCentral) is a telecommunications service by Google launched on March 11, 2009.\cite{wiki:googleVoice}} and Yahoo! Voice to tens of millions of users, UberConference launched in 2012 and is funded by Andreessen Horowitz and Google Ventures.\cite{web:uberconference}
+
+\begin{wrapfigure}{r}{0.6\textwidth}
+	\centering
+    	\includegraphics[width=0.58\textwidth,natwidth=610,natheight=642]{figs/uberconference_hangout.jpg}
+  	\caption{UberConference integrate with Hangouts Screen shot\cite{tnw:uberconference}}
+  	\label{fig:uberconference}
+\end{wrapfigure}
+
+\par The prototype system in this thesis is ideally to provide same rich media communication platform as the service provided by UberConference. In February of 2014, UberConference release the new feature which allow user to call into a Google Hangouts session with their mobile phone. The feature is shown in Figure \ref{fig:uberconference}, Once you have installed the UberConference app in Hangouts, people can join your call via phone with the help of a dedicated number. The prototype system will provide the same real-time communication service, but allow the user to use mobile phone number to create a video conference based on \gls{webrtc} on browser and communicate with audio only mobile phone user as well. It will be more easier for user since they just need to remember their user credential related to their mobile phone number to use the prototype application. During the real-time conversation, the prototype application will provide user cooperation tools like instance message and file sharing in this development phase.
+
+\noindent However, there is another important \gls{api}, \textit{RTCDataChannel} , can be used more creatively by the developer to build web applications. The experiment  usage cases, 'Cube Slam' and 'Webtorrent', are in this category which is using \textit{RTCDataChannel} to build \gls{p2p} data sharing without data going though the server to dispatch to other peers. It works more efficiently to handle the synchronization problem.
+
+\subsection{Cube Slam}
+
+\par Cube Slam (shown in Figure \ref{fig:cube_slam}) is a Chrome Experiment built with \gls{webrtc} , play an old-school arcade game with your friends without downloading and installing any plug-ins. Cube Slam uses \textit{getUserMedia} to access user's webcam and microphone ,\textit{RTCPeerConnection} to stream user video to another user, and \textit{RTCDataChannel} to transfer the bits that keep the gameplay in sync. If two users are behind firewalls, \textit{RTCPeerConnection} uses a TURN  relay server (hosted on Google Compute Engine) to make the connection. However, when there are no firewalls in the way, the entire game happens directly peer-to-peer, reducing latency for players and server costs for developers.\cite{chrome:cube_slam}
+
+\begin{figure}
+	\centering
+    	\includegraphics[width=0.8\textwidth,natwidth=610,natheight=642]{figs/cube_slam.jpg}
+  	\caption{Cube Slam Game Over Screen}
+  	\label{fig:cube_slam}
+\end{figure}
+
+\par The idea behind the Cube Slam is that use \textit{RTCDataChannel} to sync the player data in real-time to reduce the latency by peer to peer. \textit{RTCDataChannel} sends data securely, and supports an "unreliable" mode for cases where you want high performance but don't care about every single packet making it across the network. In cases like games where low delay often matters more than perfect delivery, this ensures that a single stray packet doesn't slow down the whole app. The prototype application in this thesis will still use WebSocket for data sharing instead of \textit{RTCDataChannel} because the media server using in this system is not support \textit{RTCDataChannel} yet, so it is not possible to create peer to peer session regarding to this issue. This case about \textit{RTCDataChannel} will be discussed in Chapter \ref{chp:future_work}.
+
+\subsection{Webtorrent}
+
+
 \section{WebRTC Implementation APIs}
 
 \par In order to obtain local media, the \gls{webrtc} \gls{api}s provide \textit{getUserMedia()} function to get the video and audio stream from user. For privacy reasons, a web application’s request for access to a user’s microphone or camera will only be granted after the browser has obtained permission from the user. \textit{getUserMedia()} function is currently available in Chrome, Opera and Firefox. Almost all of the \gls{webrtc} \gls{api}s are slightly different in different browsers.
@@ -16,7 +69,7 @@ However, since \gls{webrtc} \gls{api}s is not standard \gls{api} yet, the protot
 
 \begin{figure}
 	\centering
-    	\includegraphics[width=0.60\textheight,natwidth=610,natheight=642]{figs/webrtc_diagram.png}
+    	\includegraphics[height=0.50\textheight,natwidth=610,natheight=642]{figs/webrtc_diagram.png}
   	\caption{WebRTC Set up a call Process}
   	\label{fig:webrtc_diagram}
 \end{figure}
