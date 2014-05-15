@@ -1,61 +1,7 @@
-\chapter{System Development}
+\chapter{Prototype System Development}
 \label{chp:sys_dev}
 
-\noindent In this Chapter, it will cover research about current \gls{webrtc} usage on real-time communication scenario and development progress of the prototype system along with explanation and analysis.
-
-\section{WebRTC Current Usage}
-
-\noindent In May 2011, Google released an open source project for browser-based real-time communication known as \gls{webrtc}. This has been followed by ongoing work to standardise the relevant protocols in the \gls{ietf} and browser \gls{api}s in the \gls{w3c}. Then more and more web application are using it in different ways. There are mainly two part of the \gls{webrtc} \gls{api}s could be used separately or cooperatively in the different web application.
-
-\begin{itemize}[topsep=-1em,parsep=0em,itemsep=0em]
- \item \textbf{MediaStream:} get access to data streams, such as from the user's camera and microphone.
- \item \textbf{RTCPeerConnection:} audio or video calling, with facilities for encryption and bandwidth management.
- \item \textbf{RTCDataChannel:} peer-to-peer communication of generic data.
-\end{itemize}
-
-\par Because most of the application need to get the user's camera view and microphone sound, the \textit{MediaStream} \gls{api} is used always in real-time communication application. Normally \textit{MediaStream} \gls{api} will be used along with \textit{RTCPeerConnection} for showing remote peer media source content. The following business usage cases, 'Tropo' and 'Uberconference', are in this category.
-
-\clearpage
-
-\subsection{Tropo}
-
-\par Tropo is an application platform that enables web developers to write communication applications in the languages they already use, Groovy\footnote{Groovy is an object-oriented programming language for the Java platform. It is a dynamic language with features similar to those of Python, Ruby, Perl, and Smalltalk.\cite{wiki:groovy}}, Ruby\footnote{Ruby is a dynamic, reflective, object-oriented, general-purpose programming language. It was designed and developed in the mid-1990s by Yukihiro "Matz" Matsumoto in Japan.\cite{wiki:ruby}}, \gls{php}\footnote{PHP is a server-side scripting language designed for web development but also used as a general-purpose programming language.\cite{wiki:php}}, Python\footnote{Python is a widely used general-purpose, high-level programming language.\cite{wiki:python}} and JavaScript\footnote{JavaScript (JS) is a dynamic computer programming language.\cite{wiki:js}}, or use a Web \gls{api} which will talk with an application running on your own server through the use of \gls{http} and \gls{json}, feeding requests and processing responses back and forth as needed. Tropo is in the cloud, so it manages the headaches of dealing with infrastructure and keeping applications up and running at enterprise-grade. With Tropo, developers can build and deploy voice and telephony applications, or add voice to existing applications.\cite{web:tropo}
-
-\par It has some advanced features, like 'Phone numbers around the world', 'Text messaging', 'Transcription', 'Call Recording', 'Conferencing', 'Text to Speech' and 'Speech Recognition'. The prototype system in this thesis will provide similar functions like 'Text messaging' and 'Conferencing'. Since Tropo is a cloud application platform, it generates its own scripts based on programming language to provide developer possibility to easily use \gls{webrtc} to communicate with other kinds of network rather than \gls{ip} network. The functions Tropo provided is implemented in application server in the prototype, the application server will handle both the \gls{sip} stack and \gls{webrtc} stack in the system. For the client scripts will be host on the same application server for browser user to access and use.
-
-\subsection{Uberconference}
-
-\par UberConference fixes all the broken and outdated aspects of traditional conference calling, making it a more productive business tool, and transforming an industry that hasn't seen real innovation in decades. UberConference gives a visual interface to every conference call so callers can know who's on a call and who's speaking at any time, in addition to making many other features, such as Hangouts\footnote{Google Hangouts is an instant messaging and video chat platform developed by Google, which launched on May 15, 2013 during the keynote of its I/O development conference.\cite{wiki:hangouts}} integration and screen sharing, easy-to-use with the click of a button. Built by the teams that brought Google Voice\footnote{Google Voice (formerly GrandCentral) is a telecommunications service by Google launched on March 11, 2009.\cite{wiki:googleVoice}} and Yahoo! Voice to tens of millions of users, UberConference launched in 2012 and is funded by Andreessen Horowitz and Google Ventures.\cite{web:uberconference}
-
-\begin{wrapfigure}{r}{0.6\textwidth}
-	\centering
-    	\includegraphics[width=0.58\textwidth,natwidth=610,natheight=642]{figs/uberconference_hangout.jpg}
-  	\caption{UberConference integrate with Hangouts Screen shot\cite{tnw:uberconference}}
-  	\label{fig:uberconference}
-\end{wrapfigure}
-
-\par The prototype system in this thesis is ideally to provide same rich media communication platform as the service provided by UberConference. In February of 2014, UberConference release the new feature which allow user to call into a Google Hangouts session with their mobile phone. The feature is shown in Figure \ref{fig:uberconference}, Once you have installed the UberConference app in Hangouts, people can join your call via phone with the help of a dedicated number. The prototype system will provide the same real-time communication service, but allow the user to create a video conference based on \gls{webrtc} on browser by their mobile phone number and communicate with audio only mobile phone user as well. It will be more easier for user since they just need to remember their user credential related to their mobile phone number in order to use the prototype application rather than register another service user binding with private telephone number. During the real-time conversation, the prototype application will provide user cooperation tools like instance message and file sharing in this development phase.
-
-\subsection{Cube Slam}
-
-\noindent However, there is another important \gls{api}, \textit{RTCDataChannel} , can be used more creatively by the developer to build web applications. The experiment  usage cases, 'Cube Slam' and 'Webtorrent', are in this category which is using \textit{RTCDataChannel} to build \gls{p2p} data sharing without data going though the server to dispatch to other peers. It works more efficiently to handle the synchronization problem.
-
-\par Cube Slam (shown in Figure \ref{fig:cube_slam}) is a Chrome Experiment built with \gls{webrtc} , play an old-school arcade game with your friends without downloading and installing any plug-ins. Cube Slam uses \textit{getUserMedia} to access user's webcam and microphone ,\textit{RTCPeerConnection} to stream user video to another user, and \textit{RTCDataChannel} to transfer the bits that keep the gameplay in sync. If two users are behind firewalls, \textit{RTCPeerConnection} uses a TURN  relay server (hosted on Google Compute Engine) to make the connection. However, when there are no firewalls in the way, the entire game happens directly peer-to-peer, reducing latency for players and server costs for developers.\cite{chrome:cube_slam}
-
-\begin{figure}
-	\centering
-    	\includegraphics[width=0.8\textwidth,natwidth=610,natheight=642]{figs/cube_slam.jpg}
-  	\caption{Cube Slam Game Over Screen}
-  	\label{fig:cube_slam}
-\end{figure}
-
-\par The idea behind the Cube Slam is that use \textit{RTCDataChannel} to sync the player data in real-time to reduce the latency by peer to peer. \textit{RTCDataChannel} sends data securely, and supports an "unreliable" mode for cases where you want high performance but don't care about every single packet making it across the network. In cases like games where low delay often matters more than perfect delivery, this ensures that a single stray packet doesn't slow down the whole app. The prototype application in this thesis will still use WebSocket for data sharing instead of \textit{RTCDataChannel} because the media server using in this system is not support \textit{RTCDataChannel} yet, so it is not possible to create peer to peer session regarding to this issue. This case about using \textit{RTCDataChannel} in prototype application will be discussed in Chapter \ref{chp:future_work}.
-
-\subsection{Webtorrent}
-
-\par The goal of project Webtorrent is to build a browser BitTorrent client that requires no install, no plugin, no extension, and fully-interoperates with the regular BitTorrent network. It uses \gls{webrtc} Data Channels for peer-to-peer transport. Since WebTorrent is web-first, it's simple for users who do not understand .torrent files, magnet links, NATs, etc. By making BitTorrent easier, it will be accessible to new swathes of users who were previously intimidated, confused, or unwilling to install a program on their machine to participate.\cite{github:webtorrent}
-
-\par Since \gls{webrtc} is usually used for peer to peer communication, the \textit{RTCDataChannel} can be used in more creative way like Webtorrent. Although it need to keep the browser up and running on both ends, then there will be no asynchronous nature into it, it does reduce the bandwidth required and it adds privacy as to who has access to the file being shared. Since the application can reach direct between browsers, it can use the data channel to create a low latency network, where data is shared directly without going through servers on the way. It is lower cost for the developer and more secure on this case. For example, doing the same using a drastically larger number of web browser nodes as \gls{tor}\footnote{Tor (previously an acronym for The Onion Router) is free software for enabling online anonymity and censorship resistance. Tor directs Internet traffic through a free, worldwide, volunteer network consisting of more than five thousand relays to conceal a user's location or usage from anyone conducting network surveillance or traffic analysis.\cite{wiki:tor}}, increases the chance of privacy.This can reduce the need for “real” web servers to run services, and use those only as points of access into the dynamic network that is created ad-hoc.
+\noindent In this chapter, it will cover development implementation progress of the prototype system along with explanation and analysis. The prototype system is designed based on preliminary studies from previous chapter. There will be different implementation solutions to the prototype working scenario  discussed and evaluated in this chapter. After evaluating these solutions, it will come up with the fit solution to the prototype working scenario. 
 
 \section{WebRTC APIs Implementation}
 
@@ -196,19 +142,82 @@ a=candidate:2 2 UDP 2130706430 10.254.9.135 57345 typ host
 
 \section{Prototype Implementation Framework}
 
-\noindent Since \gls{webrtc} is a web \gls{api}, the prototype application will be a web application. There are many different web application framework nowadays to provide rich-client web application. In this section, some of the web application framework will be discussed to figure out which framework is best solution to the prototype scenario. Furthermore, application server is important in the prototype scenario since it does  signaling and bridge the \gls{sip} network and clients.
+\noindent Since \gls{webrtc} is a web \gls{api}, the prototype application will be a web application. There are many different web application framework nowadays to provide rich-client web application. In this section, some of the web application framework will be discussed to figure out which framework is best solution to the prototype scenario. Furthermore, application server will be discussed with different implementation solutions since it does signaling and bridge the \gls{sip} network and clients.
 
 \subsection{Client Implementation Framework}
 
-\noindent To choose web application framework to implement the client application in this thesis scenario, the main fact is that if the web  application framework is fit to the real time communication application and if the framework has the ability to integrate with \gls{webrtc} \gls{api}. After research about these kind of web application framework, it narrows down to three main framework to discuss.
+\noindent To choose web application framework to implement the client application in this thesis scenario, the main fact is that if the web  application framework is fit to the real time communication application and if the framework has the ability to integrate with \gls{webrtc} \gls{api}. After research about these kinds of web application framework, it narrows down to three main framework to discuss.
 
 \textbf{AngularDart :}
 
-\par
+\par AngularDart is a framework for building web-apps in Dart. Dart is an open-source Web programming language developed by Google. It is a class-based, single inheritance, object-oriented language with C-style syntax. It supports interfaces, abstract classes, reified generics, and optional typing. Static type annotations do not affect the runtime semantics of the code. Instead, the type annotations can provide documentation for tools like static checkers and dynamic run time checks.\cite{wiki:dart} Because most of the script language is not type strict, it is easy to mess up the code and value type in script language. Moreover, Dart has Dart-to-JavaScript compiler,dart2js, it makes Dart can be used in client and server both. Addition to AngularJs framework in Dart, it provide a professional web application structure to the developer to implement. More about AngularJs notable features will be covered in the later AngularJs solutions. 
 
-\textbf{Sipml5 :}
+\par The \gls{webrtc} implementation in Dart is in this repository: \url{https://github.com/br1anchen/AngularDart_webRTC}. The Code Snippet \ref{code:dart_webrtcctrl} shows the main controller in AngularDart. The line 5 is to import \gls{webrtc} client class \textit{speack\_client.dart}, the class has all the \gls{webrtc} \gls{api}s implemented in Dart. Line 23 is to initialize the \textit{SpeakerClient} object and set the arguments WebSocket url and room name. They are used for signaling in WebSocket Protocol.
 
-\par
+\par However, after implementation of client application and server back-end in Dart. There is a critical bug in the current Dartium browser. The Dart SDK ships with a version of the Chromium web browser modified to include a Dart \gls{vm}. Dartium browser can run Dart code directly without compilation to JavaScript. It is intended as a development tool for Dart applications, rather than as a general purpose web browser. When embedding Dart code into web apps, the current recommended procedure is to load a bootstrap JavaScript file, "dart.js", which will detect the presence or absence of the Dart \gls{vm} and load the corresponding Dart or compiled JavaScript code, respectively, therefore guaranteeing browser compatibility with or without the custom Dart VM.\cite{wiki:dart} 
+\par The issue noticed as \textbf{RtcPeerConnection.addIceCandidate results in a NotSupportedError: Internal Dartium Exception} in the Dart Google Project issues.\cite{bug:dartium} The sample code in the \gls{webrtc} Dart implementation shown in Code Snippet \ref{code:dart_add_ice}, line 1 is to create \textit{RTCPeerConnection} object. From line 5 to line 13 is to send message to server when \textit{RTCPeerConnection} object get \textit{onIceCandidate} event witch \gls{ice} candidate information. Line 17 is to bind the message listener event to Dart function \textit{onCandidate.listen}. From line 21 to line 30 is the Dart function to create \textit{RTCIceCandidate} object and add to \textit{RTCPeerConnection} object. The bug issue happens on line 27, when the \textit{RTCPeerConnection} call \textit{addIceCandidate} function, it is not allowed to have callback function in current version Dartium.
+
+\begin{lstlisting}[caption={Add IceCandidate in Dart},label={code:dart_add_ice}]
+var pc = new RtcPeerConnection(_iceServers, _dataConfig);
+
+....
+
+    pc.onIceCandidate.listen((e){
+      if (e.candidate != null) {
+        _send('candidate', {
+          'label': e.candidate.sdpMLineIndex,
+          'id': id,
+          'candidate': e.candidate.candidate
+        });
+      }
+    });
+    
+...
+
+get onCandidate => _messages.where((m) => m['type'] == 'candidate');
+
+...
+
+onCandidate.listen((message) {
+	var candidate = new RtcIceCandidate({
+		'sdpMLineIndex': message['label'],
+        'candidate': message['candidate']
+    });
+
+    _connections[message['id']].addIceCandidate(candidate,(){},(e){
+    		print('add ice candidate error');
+    });
+});
+
+...
+\end{lstlisting}
+
+\par There is a work around solution in one Stack Overflow\footnote{Stack Overflow is a privately held website, the flagship site of the Stack Exchange Network, created in 2008 by Jeff Atwood and Joel Spolsky, as a more open alternative to earlier Q\&A sites such as Experts Exchange.} answer: \url{http://stackoverflow.com/questions/20404312/how-to-call-addicecandidate-in-dart}. The fix method is to use \textit{js-interop} library to use pure javascript code in Dart to call the \gls{webrtc} Web \gls{api} instead of Dart \gls{webrtc} interface.
+\par Mozilla's Brendan Eich, who developed the JavaScript language, stated that:
+
+\textit{"I guarantee you that Apple and Microsoft (and Opera and Mozilla, but the first two are enough) will never embed the Dart VM. So 'Works best in Chrome' and even 'Works only in Chrome' are new norms promulgated intentionally by Google. We see more of this fragmentation every day. As a user of Chrome and Firefox (and Safari), I find it painful to experience, never mind the political bad taste."}\cite{wiki:dart}
+
+\par Since Dart in not support to most modern web browser like FireFox, will not be used in this prototype.
+
+\textbf{Sipml5 + webrtc2sip:}
+
+\begin{figure}
+	\centering
+    	\includegraphics[width=0.80\textwidth,natwidth=610,natheight=642]{figs/sipml5_network.png}
+  	\caption{Sipml5 and webrtc2sip Network}
+  	\label{fig:sipml5_network}
+\end{figure}
+
+\par Sipml5 is the world's first open source \gls{html5} \gls{sip} client entirely written in javascript for integration in social networks (FaceBook, Twitter, Google+), online games, e-commerce websites, email signatures. The media stack rely on \gls{webrtc}. The client can be used to connect to any \gls{sip} or \gls{ims} network from your preferred browser to make and receive audio/video calls and instant messages.\cite{website:sipml5}
+
+\par Sipml5 provides whole client solution to communicate with other kind of signaling real-time communication network. The \gls{sip} and \gls{sdp} stacks are entirely written in javascript and the network transport uses WebSockets as per draft-ibc-sipcore-sip-websocket. However the community of sipml5 is not so active, the issues and source code on sipml5 source code project website \url{https://code.google.com/p/sipml5/} are not updated regularly. Like the Figure \ref{fig:sipml5_network} showing, it works with media gateway webrtc2sip.
+
+\par webrtc2sip is a smart and powerful gateway using \gls{webrtc} and \gls{sip} to turn your browser into a phone with audio, video and \gls{sms} capabilities. The gateway allows your web browser to make and receive calls from/to any \gls{sip}-legacy network or \gls{pstn}.
+The gateway contains four modules: \gls{sip} Proxy, RTCWeb Breaker, Media Coder, Click-to-Call.\cite{website:webrtc2sip}
+
+\par In the prototype working scenario, it is necessary to have media gateway to communicate with \gls{sip}-legacy network. Since the current \gls{pstn} using in this prototype go through Gintel \gls{mpbx} Platform, it is necessary to use RTCWeb Breaker to be able to connect the browser to a SIP-legacy endpoint.
+
+\par Therefore, the test for Sipml5 and webrtc2sip solution is based on the live demo \url{http://sipml5.org/call.htm}. But even with the RTCWeb Breaker, the test is still failed to call any number through the target \gls{pstn}. Since most of the source code of these two framework are hidden from the encapsulation, it is impossible to debug which part of the testing system is the problem. In the test, the registration for \gls{sip} client is successful, but there are 'too long message' in the \gls{sip} error message got from the \gls{sip} server. It means that the sipml5 and webrtc2sip network architecture is not compatible with the target \gls{pstn} through the Gintel \gls{mpbx} Platform. This solution can not be used in the prototype system.
 
 \textbf{AngularJs + Socket.io: }
 
