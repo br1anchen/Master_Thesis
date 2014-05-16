@@ -3,6 +3,14 @@
 
 \noindent In this chapter, it will cover development implementation progress of the prototype system along with explanation and analysis. The prototype system is designed based on preliminary studies from previous chapter. There will be different implementation solutions to the prototype working scenario  discussed and evaluated in this chapter. After evaluating these solutions, it will come up with the fit solution to the prototype working scenario. 
 
+\section{Prototype System Network}
+
+\noindent In the original \gls{webrtc} application implementation, it uses mesh network because \gls{webrtc} means to be the peer to peer communication method bypass the third party server. However, the prototype system will use centralized server network to control and route the communication channels between different types end points. In this section, it will describe the reason to use centralized server network rather than mesh network.
+
+\subsection{Mesh Network}
+
+\subsection{Centralized Server Network}
+
 \section{WebRTC APIs Implementation}
 
 \noindent \gls{webrtc} components are accessed with JavaScript APIs. Currently in development are the Network Stream \gls{api}, which represents an audio or video data stream, and the PeerConnection \gls{api}, which allows two or more users to communicate browser-to-browser. Also under development is a DataChannel \gls{api} that enables communication of other types of data for real-time gaming, text chat, file transfer, and so forth. Because the media server used in prototype system is not support for DataChannel yet, the DataChannel \gls{api} will not be covered in this section.
@@ -192,7 +200,7 @@ onCandidate.listen((message) {
 ...
 \end{lstlisting}
 
-\par There is a work around solution in one Stack Overflow\footnote{Stack Overflow is a privately held website, the flagship site of the Stack Exchange Network, created in 2008 by Jeff Atwood and Joel Spolsky, as a more open alternative to earlier Q\&A sites such as Experts Exchange.} answer: \url{http://stackoverflow.com/questions/20404312/how-to-call-addicecandidate-in-dart}. The fix method is to use \textit{js-interop} library to use pure javascript code in Dart to call the \gls{webrtc} Web \gls{api} instead of Dart \gls{webrtc} interface.
+\par There is a work around solution in one Stack Overflow\footnote{Stack Overflow is a privately held website, the flagship site of the Stack Exchange Network, created in 2008 by Jeff Atwood and Joel Spolsky, as a more open alternative to earlier Q\&A sites such as Experts Exchange.} answer: \url{http://stackoverflow.com/questions/20404312/how-to-call-addicecandidate-in-dart}. The fix method is to use \textit{js-interop} library to use pure JavaScript code in Dart to call the \gls{webrtc} Web \gls{api} instead of Dart \gls{webrtc} interface.
 \par Mozilla's Brendan Eich, who developed the JavaScript language, stated that:
 
 \textit{"I guarantee you that Apple and Microsoft (and Opera and Mozilla, but the first two are enough) will never embed the Dart VM. So 'Works best in Chrome' and even 'Works only in Chrome' are new norms promulgated intentionally by Google. We see more of this fragmentation every day. As a user of Chrome and Firefox (and Safari), I find it painful to experience, never mind the political bad taste."}\cite{wiki:dart}
@@ -208,9 +216,9 @@ onCandidate.listen((message) {
   	\label{fig:sipml5_network}
 \end{figure}
 
-\par Sipml5 is the world's first open source \gls{html5} \gls{sip} client entirely written in javascript for integration in social networks (FaceBook, Twitter, Google+), online games, e-commerce websites, email signatures. The media stack rely on \gls{webrtc}. The client can be used to connect to any \gls{sip} or \gls{ims} network from your preferred browser to make and receive audio/video calls and instant messages.\cite{website:sipml5}
+\par Sipml5 is the world's first open source \gls{html5} \gls{sip} client entirely written in JavaScript for integration in social networks (FaceBook, Twitter, Google+), online games, e-commerce websites, email signatures. The media stack rely on \gls{webrtc}. The client can be used to connect to any \gls{sip} or \gls{ims} network from your preferred browser to make and receive audio/video calls and instant messages.\cite{website:sipml5}
 
-\par Sipml5 provides whole client solution to communicate with other kind of signaling real-time communication network. The \gls{sip} and \gls{sdp} stacks are entirely written in javascript and the network transport uses WebSockets as per draft-ibc-sipcore-sip-websocket. However the community of sipml5 is not so active, the issues and source code on sipml5 source code project website \url{https://code.google.com/p/sipml5/} are not updated regularly. Like the Figure \ref{fig:sipml5_network} showing, it works with media gateway webrtc2sip.
+\par Sipml5 provides whole client solution to communicate with other kind of signaling real-time communication network. The \gls{sip} and \gls{sdp} stacks are entirely written in JavaScript and the network transport uses WebSockets as per draft-ibc-sipcore-sip-websocket. However the community of sipml5 is not so active, the issues and source code on sipml5 source code project website \url{https://code.google.com/p/sipml5/} are not updated regularly. Like the Figure \ref{fig:sipml5_network} showing, it works with media gateway webrtc2sip.
 
 \par webrtc2sip is a smart and powerful gateway using \gls{webrtc} and \gls{sip} to turn your browser into a phone with audio, video and \gls{sms} capabilities. The gateway allows your web browser to make and receive calls from/to any \gls{sip}-legacy network or \gls{pstn}.
 The gateway contains four modules: \gls{sip} Proxy, RTCWeb Breaker, Media Coder, Click-to-Call.\cite{website:webrtc2sip}
@@ -219,6 +227,24 @@ The gateway contains four modules: \gls{sip} Proxy, RTCWeb Breaker, Media Coder,
 
 \par Therefore, the test for Sipml5 and webrtc2sip solution is based on the live demo \url{http://sipml5.org/call.htm}. But even with the RTCWeb Breaker, the test is still failed to call any number through the target \gls{pstn}. Since most of the source code of these two framework are hidden from the encapsulation, it is impossible to debug which part of the testing system is the problem. In the test, the registration for \gls{sip} client is successful, but there are 'too long message' in the \gls{sip} error message got from the \gls{sip} server. It means that the sipml5 and webrtc2sip network architecture is not compatible with the target \gls{pstn} through the Gintel \gls{mpbx} Platform. This solution can not be used in the prototype system.
 
-\textbf{AngularJs + Socket.io: }
+\textbf{AngularJs + Socket.IO:}
 
-\par
+\par AngularJS is built around the belief that declarative programming should be used for building user interfaces and wiring software components, while imperative programming is excellent for expressing business logic. The framework adapts and extends traditional \gls{html} to better serve dynamic content through two-way data-binding that allows for the automatic synchronization of models and views. As a result, AngularJS de-emphasizes \gls{dom} manipulation and improves testability. Angular follows the \gls{mvc} pattern of software engineering and encourages loose coupling between presentation, data, and logic components. Using dependency injection, Angular brings traditional server-side services, such as view-dependent controllers, to client-side web applications. Consequently, much of the burden on the backend is reduced, leading to much lighter web applications.\cite{wiki:angularjs}
+
+\par AngularJs is perfect for single-page web application, the framework features provide developer a professional way to structure the web application in JavaScript. Moreover, the developer community of AngularJs is quite active, there are a lot of different Angular module services to provide the different interfaces against different web \gls{api}s.In the prototype, there will be several third party Angular module library to be used in order to integrate with some advanced JavaScript library or web \gls{api}s in Angular style.
+
+\par Socket.IO is a JavaScript library for realtime web applications. It has two parts: a client-side library that runs in the browser, and a server-side library for node.js. Both components have a nearly identical \gls{api}. Socket.IO primarily uses the WebSocket protocol, but if needed can fallback on multiple other methods, such as Adobe Flash sockets, \gls{jsonp} polling, and \gls{ajax} long polling, while providing the same interface. Although it can be used as simply a wrapper for WebSocket, it provides many more features, including broadcasting to multiple sockets, storing data associated with each client, and asynchronous I/O.\cite{wiki:socketio} In the prototype application, Socket.IO is used in WebSocket protocol because the WebSocket protocol provides full-duplex communications channels over a single \gls{tcp} connection. Then the communication channel will be active and real time between the clients and server during the whole connecting procedure. It fits the real time communication application requirement.
+
+\par After test demo client application implemented in AngularJs and Socket.IO frameworks, it works fine with the basic \gls{webrtc} functions and simple \gls{sip} registration against \gls{sip} server to target \gls{pstn}. The final decision of the client implementation framework of prototype system will be AngularJs and Socket.IO.
+
+\subsection{Server Implementation Framework}
+
+\noindent Since the client side will use Socket.IO as communication protocol library, the server back-end in the prototype system will use Node.js as server implementation framework. In thist section, more detail about comparison and differences of Node.js against traditional web service back-end (in Java, ASP .NET or \gls{php}) will be covered.
+
+\textbf{Node.js:}
+
+\par 
+
+\textbf{Mobicents Sip Servlets + Java web service:}
+
+\par 
