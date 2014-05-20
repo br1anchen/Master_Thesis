@@ -36,7 +36,7 @@
 
 \par \gls{webrtc} needs server to help users discover each other and exchange 'real world' details such as names. Then \gls{webrtc} client applications (peers) exchange network information. After that, peers exchange data about media such as video format and resolution. Finally, \gls{webrtc} client applications can traverse \gls{nat} gateways and firewalls.
 
-\par Compare to the traditional telephony network which is shown in Figure\ref{fig:telephony_network}\cite{web:teleVSvoip}, the main difference between these two communication network is that \gls{webrtc} is \gls{p2p} communication in \gls{stun} server scenario, after the signaling between end-peers, the media data are exchanged directly between tow peers. However, in the traditional telephony, all the media data are transferred to \gls{pbx} and switches regarding to \gls{pstn}\footnote{The PSTN consists of telephone lines, fiber optic cables, microwave transmission links, cellular networks, communications satellites, and undersea telephone cables, all interconnected by switching centers, thus allowing any telephone in the world to communicate with any other. Originally a network of fixed-line analog telephone systems, the PSTN is now almost entirely digital in its core network and includes mobile and other networks, as well as fixed telephones.\cite{wiki:pstn}} then reach the other side of the peer. Even in \gls{turn} server scenario for \gls{webrtc}, the media stream is only relaying to the \gls{turn} then directly transfer to another peer, no switches involved. Two server working scenario will be discussed in Chapter \ref{chp:sys_dev}.
+\par Compare to the traditional telephony network which is shown in Figure\ref{fig:telephony_network}\cite{web:teleVSvoip}, the main difference between these two communication network is that \gls{webrtc} is \gls{p2p} communication in \gls{stun} server scenario, after the signaling between end-peers, the media data are exchanged directly between tow peers. However, in the traditional telephony, all the media data are transferred to \gls{pbx} and switches regarding to \gls{pstn}\footnote{The PSTN consists of telephone lines, fiber optic cables, microwave transmission links, cellular networks, communications satellites, and undersea telephone cables, all interconnected by switching centers, thus allowing any telephone in the world to communicate with any other. Originally a network of fixed-line analog telephone systems, the PSTN is now almost entirely digital in its core network and includes mobile and other networks, as well as fixed telephones.\cite{wiki:pstn}} then reach the other side of the peer. Even in \gls{turn} server scenario for \gls{webrtc}, the media stream is only relaying to the \gls{turn} then directly transfer to another peer, no switches involved.
 
 \subsection{WebRTC Implementation Steps}
 
@@ -49,7 +49,7 @@
 
 \noindent There are four main steps to implement a \gls{webrtc} session shown in Figure \ref{fig:webrtc_4steps}. The browser client need to obtain local media first, then set up a connection between the browser and the other peer through some signaling, after that attach the media and data channels to the connection, afterwards exchange the session description from each other. Finally the media stream will automatically exchange through the real-time peer to peer media channel.
 
-\par Each step shown in the Figure \ref{fig:webrtc_4steps} is implemented by some \gls{webrtc} \gls{api}s. More detail about how to use \gls{webrtc} \gls{api}s to implement these steps will be covered in Chapter \ref{chp:sys_dev}. The \gls{webrtc} architecture is shown in Figure \ref{fig:webrtc_api_arch}, the main focus in this thesis will be Web \gls{api} part and transport part because Web \gls{api} is the tool to implement the \gls{webrtc} application and transport part is the key for \gls{webrtc} application to communicate with application server, media server and other end peer in the system. 
+\par Each step shown in the Figure \ref{fig:webrtc_4steps} is implemented by some \gls{webrtc} \gls{api}s. More detail about how to use \gls{webrtc} \gls{api}s to implement these steps will be covered in Chapter \ref{chp:sys_imp}. The \gls{webrtc} architecture is shown in Figure \ref{fig:webrtc_api_arch}, the main focus in this thesis will be Web \gls{api} part and transport part because Web \gls{api} is the tool to implement the \gls{webrtc} application and transport part is the key for \gls{webrtc} application to communicate with application server, media server and other end peer in the system. 
 
 \begin{figure}
 	\centering
@@ -58,7 +58,7 @@
   	\label{fig:webrtc_api_arch}
 \end{figure}
 
-\par Besides \gls{webrtc} \gls{api}s, signaling is the other important factor in the system. \gls{webrtc} uses \textit{RTCPeerConnection} (more about this \gls{api} will be discussed in Chapter \ref{chp:sys_dev}) to communicate streaming data between browsers, but also needs a mechanism to coordinate communication and to send control messages, a process known as signaling. Signaling methods and protocols are not specified by \gls{webrtc} by Google purpose, so signaling is not part of the \textit{RTCPeerConnection} \gls{api}.
+\par Besides \gls{webrtc} \gls{api}s, signaling is the other important factor in the system. \gls{webrtc} uses \textit{RTCPeerConnection} (more about this \gls{api} will be discussed in Chapter \ref{chp:sys_imp}) to communicate streaming data between browsers, but also needs a mechanism to coordinate communication and to send control messages, a process known as signaling. Signaling methods and protocols are not specified by \gls{webrtc} by Google purpose, so signaling is not part of the \textit{RTCPeerConnection} \gls{api}.
 
 \par Instead, \gls{webrtc} app developers can choose whatever messaging protocol they prefer, such as \gls{sip} or \gls{xmpp}, and any appropriate duplex (two-way) communication channel. The prototype application in this thesis will use WebSocket\footnote{WebSocket is a protocol providing full-duplex communications channels over a single TCP connection.\cite{wiki:websocket}} as signaling between \gls{webrtc} browser end point and keep use \gls{sip} as signaling for \gls{sip} end point (mobile/fixed phone based on \gls{pstn} in this case).
 
@@ -70,7 +70,7 @@
  \item Media capabilities: the codecs and resolutions can be handled by the browser and the browser it wants to communicate with.
 \end{itemize}
 
-\par The exchange of information via signaling must have completed successfully before peer-to-peer streaming can begin. For the prototype application in this thesis, the signaling has two mechanisms, one is for \gls{webrtc} browser clients and the other is for \gls{sip} clients, it will be explained in Chapter \ref{chp:sys_dev}.
+\par The exchange of information via signaling must have completed successfully before peer-to-peer streaming can begin. For the prototype application in this thesis, the signaling has two mechanisms, one is for \gls{webrtc} browser clients and the other is for \gls{sip} clients, it will be explained in Chapter \ref{chp:sys_imp}.
 
 \section{SIP}
 \noindent The prototype application in this thesis will be integrated with \gls{pstn} through \gls{sip} server. Therefore the application server implemented in this system will use \gls{sip} signaling to communicate with \gls{sip} server to handle the signaling configuration with mobile/fixed phone end-point.
@@ -92,7 +92,7 @@
 \par A registrar is a \gls{sip} endpoint that accepts REGISTER requests and places the information it receives in those requests into a location service for the domain it handles. The location service links one or more \gls{ip} addresses to the \gls{sip} \gls{uri} of the registering agent. The \gls{uri} uses the sip: scheme, although other protocol schemes are possible, such as tel:. More than one user agent can register at the same \gls{uri}, with the result that all registered user agents receive the calls to the \gls{uri}.
 
 \noindent \textbf{Gateway}\cite{wiki:sip}:
-\par Gateways can be used to interface a \gls{sip} network to other networks, such as the \gls{pstn}, which use different protocols or technologies. In the prototype application, the application server is the gateway to interface a \gls{webrtc} WebSocket network (The working process will be covered in Chapter \ref{chp:sys_dev}).
+\par Gateways can be used to interface a \gls{sip} network to other networks, such as the \gls{pstn}, which use different protocols or technologies. In the prototype application, the application server is the gateway to interface a \gls{webrtc} WebSocket network. The working process will be covered in Chapter \ref{chp:sys_imp}.
 
 \subsection{SIP messages}
 \noindent Since the application server in this system will be used as \gls{sip} \gls{ua} and \gls{sip} Gateway, it will send \gls{sip} message request to \gls{sip} server and receive \gls{sip} message request from the \gls{sip} server.
@@ -124,7 +124,7 @@
  \item \textbf{486 Busy Here:} Callee is busy.
 \end{itemize}
 
-\par By listening these \gls{sip} response, the application will send request to either \gls{webrtc} browser client or \gls{sip} client to play as the gateway role in the system. This gateway mechanism will be introduced in Chapter \ref{chp:sys_dev}.
+\par By listening these \gls{sip} response, the application will send request to either \gls{webrtc} browser client or \gls{sip} client to play as the gateway role in the system. This gateway mechanism will be introduced in Chapter \ref{chp:sys_design}.
 
 \section{Prototype System Working Flow}
 \noindent The main purpose of this thesis is to make unified communication solution with \gls{webrtc} technology. 
@@ -138,6 +138,6 @@
 \end{figure}
 
 \par The Figure \ref{fig:sys_work_diagram} shows the basic working flow of the prototype system. The Web Server is the application server in the system, it mainly bridges the \gls{webrtc} browser client with other \gls{webrtc} clients and the \gls{sip} network. The \gls{sip} server bridges the \gls{sip} network and \gls{pstn} network or traditional telephony network. And also the Media Relay server relay all the media stream from different end clients, in the prototype system, it is a media server provided by Dialogic, the Network Fuel company, which is called PowerMedia XMS v2.1\footnote{PowerMedia XMS is pre-integrated with a variety of application servers and signaling gateways with HTTP-to-SIP (H2S) functionality and rapidly integrates with others using its web API or standard interfaces.} PowerMedia XMS acts as a WebRTC Media Gateway to mediate WebRTC media-plane differences from those of typical existing VoIP networks including encryption interworking, transcoding, and client-based NAT traversal support. The reason to use this media server is to avoid hard-code transition between \gls{webrtc} \gls{sdp} and \gls{sip} \gls{sdp}. Then the end client no matter it is \gls{webrtc} client or \gls{sip} client, they will communicate with the same signaling client for their aspect.
-\par Moreover, since the media server is used in this case, during the multiple end-point conversation, each end-point will only exchange their media stream to the single end-point on the media server (PowerMedia XMS server), it will make light client and centralized media server control. The benefit of this system architecture will be discussed more in the Chapter \ref{chp:sys_dev}.
+\par Moreover, since the media server is used in this case, during the multiple end-point conversation, each end-point will only exchange their media stream to the single end-point on the media server (PowerMedia XMS server), it will make light client and centralized media server control. The benefit of this system architecture will be discussed more in the Chapter \ref{chp:sys_design}.
 
 \par Therefore, in the Figure \ref{fig:sys_work_diagram}, all the end point keep using their own original signaling protocol to communicate with different server in order to reach different scope end point.
