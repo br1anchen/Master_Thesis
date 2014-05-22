@@ -400,6 +400,99 @@ angular.module('webrtcDemo.filters').
 });
 \end{lstlisting}
 
+\section{ContactsCtrl Scrtip} \label{app:contact_ctrl}
+
+\begin{lstlisting}[caption={ContactsCtrl.js in application client},label={code:contact_ctrl}]
+'use strict';
+
+
+/**
+*  Controllers Module
+*
+* Contacts Controller
+*/
+angular.module('webrtcDemo.controllers').
+	controller('ContactsCtrl',function ($scope,$location,WebSocketService,GoogleAPIService,storage,$filter) {
+		console.log('init contacts controller');
+
+		$scope.selectedContact;
+
+		var username = storage.get('current-user').name;
+		_initContactsView();
+
+		function _initContactsView(){
+
+			$scope.$watch('selectedContact',function(newVal,oldVal){
+				if(newVal && newVal != oldVal){
+					console.log($scope.selectedContact);
+					$scope.outPhone.number = $scope.selectedContact.originalObject.number;
+				}
+			});
+
+			if(storage.get('contactList-' + username)){
+				$scope.contactsHolder.contacts = storage.get('contactList-' + username);
+			}
+
+			_initContactsTable();
+		}
+
+		function _initContactsTable(){
+
+			$scope.config = {
+		    itemsPerPage: 13,
+		    fillLastPage: "yes"
+		  };
+		}
+
+		$scope.callContact = function(contact){
+			console.log('pick number: ' + contact.number);
+			$scope.outPhone.number = contact.number;
+			$scope.callNumber();
+		}
+
+		$scope.contactHvor = function(contact){
+			contact.hvor = ! contact.hvor;
+		}
+
+		$scope.contactListHvor = function(contact){
+			contact.listHvor = ! contact.listHvor;
+		}
+
+		$scope.importContacts = function(){
+			$scope.contactsHolder.contacts = [];
+			GoogleAPIService.oAuth().then(function(token){
+				GoogleAPIService.queryContacts(token).then(function(data){
+					angular.forEach(data.feed.entry,function(person, key){
+						if(person['gd$phoneNumber']){
+							var contact = {
+								name: person.title['$t'],
+								number: person['gd$phoneNumber'][0]['$t'],
+								online: false
+							}
+
+							if($scope.onlines){
+								var online = _.find($scope.onlines, function(c){
+									return c.number == contact.number; 
+								});
+
+								if(online){
+									contact.online = true;
+								}
+							}
+
+							$scope.contactsHolder.contacts.push(contact);
+						}
+					});
+
+					storage.set('contactList-' + username,$scope.contactsHolder.contacts);
+
+				});
+			});
+		}
+
+	});
+\end{lstlisting}
+
 \section{GoogleAPIService Scrtip} \label{app:google_api}
 
 \begin{lstlisting}[caption={GoogleAPIService.js in application client},label={code:google_api}]
@@ -520,97 +613,6 @@ class WebRTCCtrl {
     });
   }
 }
-\end{lstlisting}
-
-\begin{lstlisting}[caption={ContactsCtrl.js in application client},label={code:contact_ctrl}]
-'use strict';
-
-
-/**
-*  Controllers Module
-*
-* Contacts Controller
-*/
-angular.module('webrtcDemo.controllers').
-	controller('ContactsCtrl',function ($scope,$location,WebSocketService,GoogleAPIService,storage,$filter) {
-		console.log('init contacts controller');
-
-		$scope.selectedContact;
-
-		var username = storage.get('current-user').name;
-		_initContactsView();
-
-		function _initContactsView(){
-
-			$scope.$watch('selectedContact',function(newVal,oldVal){
-				if(newVal && newVal != oldVal){
-					console.log($scope.selectedContact);
-					$scope.outPhone.number = $scope.selectedContact.originalObject.number;
-				}
-			});
-
-			if(storage.get('contactList-' + username)){
-				$scope.contactsHolder.contacts = storage.get('contactList-' + username);
-			}
-
-			_initContactsTable();
-		}
-
-		function _initContactsTable(){
-
-			$scope.config = {
-		    itemsPerPage: 13,
-		    fillLastPage: "yes"
-		  };
-		}
-
-		$scope.callContact = function(contact){
-			console.log('pick number: ' + contact.number);
-			$scope.outPhone.number = contact.number;
-			$scope.callNumber();
-		}
-
-		$scope.contactHvor = function(contact){
-			contact.hvor = ! contact.hvor;
-		}
-
-		$scope.contactListHvor = function(contact){
-			contact.listHvor = ! contact.listHvor;
-		}
-
-		$scope.importContacts = function(){
-			$scope.contactsHolder.contacts = [];
-			GoogleAPIService.oAuth().then(function(token){
-				GoogleAPIService.queryContacts(token).then(function(data){
-					angular.forEach(data.feed.entry,function(person, key){
-						if(person['gd$phoneNumber']){
-							var contact = {
-								name: person.title['$t'],
-								number: person['gd$phoneNumber'][0]['$t'],
-								online: false
-							}
-
-							if($scope.onlines){
-								var online = _.find($scope.onlines, function(c){
-									return c.number == contact.number; 
-								});
-
-								if(online){
-									contact.online = true;
-								}
-							}
-
-							$scope.contactsHolder.contacts.push(contact);
-						}
-					});
-
-					storage.set('contactList-' + username,$scope.contactsHolder.contacts);
-
-				});
-			});
-		}
-
-	});
 \end{lstlisting}
 
 \chapter{Appendix C}
