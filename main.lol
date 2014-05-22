@@ -9,4 +9,4 @@
 \contentsline {lstlisting}{\numberline {A.4}ContactTableDirective.js in application client}{58}{lstlisting.A.4}
 \contentsline {lstlisting}{\numberline {A.5}ContactsCtrl.js in application client}{59}{lstlisting.A.5}
 \contentsline {lstlisting}{\numberline {A.6}GoogleAPIService.js in application client}{61}{lstlisting.A.6}
-\contentsline {lstlisting}{\numberline {B.1}WebRTCCtrl in Dart application client}{65}{lstlisting.B.1}
+\contentsline {lstlisting}{\numberline {B.1}WebRTCCtrl in Dart application client}{63}{lstlisting.B.1}
