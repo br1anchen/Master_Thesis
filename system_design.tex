@@ -9,7 +9,38 @@
 
 \subsection{Mesh Network}
 
-\subsection{Centralized Server Network}
+\par A mesh network is a network topology in which each node (called a mesh node) relays data for the network, the illustration of the network is shown in Figure \ref{fig:mesh_network}. All nodes cooperate in the distribution of data in the network. When \gls{webrtc} designed, it considered as mesh network using and take the advantages of the mesh network. Mesh network provides point-to-point line configuration makes identification and isolation of faults easy. The messages travel through a dedicated line in the mesh network, directly to the intended recipient. More privacy and security are thus enhanced. If a fault occurs in a given link of the network, only those communications between that specific pair of devices sharing the link will be affected.\cite{wiki:mesh_network}
+
+\par However, with the design of mesh network, the more extensive the network, in terms of scope or of physical area, the greater the investment necessary to build it will be, due, among other considerations, to the amount of cabling and the number of hardware ports it will require.
+Every device must be connected to every other device, installation and re-connection are difficult. The huge bulk of the wiring can often be greater than the available space in the ceiling or under floors can accommodate.
+
+\begin{figure}
+	\centering
+    	\includegraphics[width=0.40\textwidth,natwidth=610,natheight=642]{figs/mesh_network.png}
+  	\caption{Illustration of a Mesh Network \cite{wiki:mesh_network}}
+  	\label{fig:mesh_network}
+\end{figure}
+
+\par Considering the prototype system case, a real-time communication system, the scaling problem in the feature will eventually be the top priority issue. With the mesh network, it is difficult and impossible to scale the system with the control since the network scales by the unknown end points.There is a similar production application called \textit{appear.in}. It is a video conversations application with up to 8 people in the browser. \textit{appear.in} uses peer-to-peer communication, meaning that the video streams are sent directly between the browser clients. Nothing is stored on the server and all the communication is encrypted over SSL. But the limit of 8 clients in one conversation is mainly because the client browser it self can not handle too many peer connections. Because according to mesh network, every client in the conversation would set up one unique \gls{webrtc} \textit{RTCPeerConnection} object and one unique media stream exchange channel on the client, it consumes client computer resources a lot. Thus, the prototype system will not use mesh network as the system network architecture in order to avoid the future scaling problem. The advantages of the mesh network is well implemented in the \gls{webrtc} api, then the prototype system will keep these advantages to keep the point-to-point lines isolated with each other and keep the point-to-point communication more private and secure.
+
+\subsection{Centralized Network}
+
+\par Centralized network is a type of network where all users connect to a central server, which is the acting agent for all communications. This server would store both the communications and the user account information. Most public instant messaging platforms use a centralized network. It is also called as centralized server-structure.\cite{webopedia:centralized_network} It is similar network architecture shown in Figure \ref{fig:system_network}.
+
+\begin{figure}
+	\centering
+    	\includegraphics[width=0.70\textwidth,natwidth=610,natheight=642]{figs/system_network.png}
+  	\caption{Prototype System Network}
+  	\label{fig:system_network}
+\end{figure}
+
+\par The advantages of centralized server network are centralized control of the system, centralized observation of the system and light requirement for the client . In the prototype system, there are application server and media server to handle the application logic business and media stream exchange business(see in Figure \ref{fig:system_network}). Although every clients communicate with application to do the \gls{webrtc} signaling, the media stream is not go through the application server, it goes through the media server only. Furthermore, every client creates single \gls{webrtc} connection pair with the one resource on XMS media server, the advantage of point-to-point line configuration is still kept in the system. As client aspect, it still makes peer-to-peer media stream connection based on \gls{ssl}. The function of XMS media server is to combine more than two of the peer resources into one conference resource in order to set up the multimedia conference channel. More detail about XMS media server handling will be covered in Chapter \ref{chp:sys_imp}.
+
+\par The other important advantage of centralized server network is that the application server and media server can observe the condition and quality of the real-time conversation to administrate the routing and quality improvement process. For this reason, the media stream quality on every end point will be more stable and better quality control. Since the prototype application is to integrate with traditional telephony network, it is important to provide similar quality control and fault tolerant mechanism in the prototype system.
+
+\par The disadvantage of centralized server network would be the application server and media server itself as well. During the development of the prototype system, it is easy to figure out that the machine to host the application server and media server is not powerful enough to handle too much client connection and media stream connection. When it meets the scaling issue, the application server and media server need to be distributed in multiple server host and consume powerful server machines. The cost of the entire system is higher than the mesh network solution.
+
+\par As a conclusion of these two types network architecture, for this prototype system, it will be centralized server network, Figure \ref{fig:system_network}, to be implemented because it is more suit to the goal of this thesis to be integrated with traditional telephony network usage.
 
 \section{Prototype Implementation Framework}
 
