@@ -142,7 +142,33 @@ a=candidate:2 2 UDP 2130706430 10.254.9.135 57345 typ host
 
 \section{AngularJs framework Implementation}
 
-\noindent As it described about AngularJs in Chapter \ref{chp:pre_study}, there are three layer components in the framework, view, controller and service. The files structure is shown in Appendix \ref{code:angularjs_structure}. For each part of the application block, it has controller Javascript file and service Javascript file. Controller and service scripts are working with the \gls{html} view scripts.
+\noindent As it described about AngularJs in Chapter \ref{chp:pre_study}, there are three layer components in the framework, view, controller and service. The files structure is shown in Appendix \ref{code:angularjs_structure}. Application has two main pages, \textit{login} page and \textit{phone} page. There are \textit{chatboard},\textit{contacts list}, \textit{contacts table}, \textit{dialpanel} and \textit{notification} user interface component block in \textit{phone} page. For each part of the application block, it has controller Javascript file and service Javascript file. Controller and service scripts are working with the \gls{html} view scripts. In this section, there will be one sample part of the prototype application client explained to understand how the AngularJs is used in prototype application.
+
+\par The \textit{app.js} script shown in Code Snippet \ref{code:app_js} is the bootstrap script for AngularJs framework. It initializes the application module of AngularJs framework and declare the dependencies which will be used in the application.
+
+\par The contact table component in \textit{phone} page of the application is structured in four scripts, \textit{contactTable.jade} script in Code Snippet \ref{code:contact_table}, \textit{ContactTableDirective.js} script in Code Snippet \ref{code:contact_table_dir}, \textit{ContactsCtrl.js} script in Code Snippet \ref{code:contact_ctrl} and \textit{GoogleAPIService.js} script in Code Snippet \ref{code:google_api}. It provides the application contacts information in advanced functioning table and search function in text input filed.
+
+\subsection{app.js Script (AngularJs Bootstrap)}
+
+\par The \textit{app.js} script is shown in Code Snippet \ref{code:app_js}, it declares the application level module which depends on different filters, modules and services. The modules \textit{webrtcDemo.services}, \textit{webrtcDemo.controllers}, \textit{webrtcDemo.directives} and \textit{webrtcDemo.filters} are the customized modules implemented for prototype application. The rest of the module which are included as dependencies are third party AngularJs modules used in the prototype application. AngularJs developer community is quite active community, there are many useful open sourced projects or modules can be just included like the line 6 to line 15 in Code Snippet \ref{code:app_js}.
+
+\par From line 22 to line 41 is the configuration for the application level module \textit{webrtcDemo}, in the prototype application code, it used to set the application routing map. There are two main pages, one is \textit{login} page with "/login" \gls{url}(line 24,25) and the other one is \textit{phone} page with "/chat" \gls{url}(line 28,29). The Angular controllers which are bind with these page view are also declared in \textit{\$routeProvider} service in line 26 and line 30. And the default \gls{url} is set to "/login" to make sure if user has not logged in the system, he need to input the user credential to log himself.
+
+\par From line 43 to line 49 in the Code Snippet \ref{code:app_js} are the modules declaration part for four different customized modules used in application. 
+
+\subsection{contactTable.jade Script (View)}
+
+\par The \textit{contactTable.jade} script is the view component of the AngularJs. It is a Jade\footnote{Jade is a high performance template engine heavily influenced by Haml and implemented with JavaScript for node.\cite{github:jade}} script file. The template engine used on Node.js in prototype application is Jade which provides more clear way to program \gls{html} node template scripts. In the Code Snippet \ref{code:contact_table}, Jade has the same node name as normal node template engine \gls{ejs} and some Angular directives in the template. For example, at line 2 in Code Snippet \ref{code:contact_table}, the \textit{angucomplete-alt} directive is a third party Angular directive to provide auto-completion features in \gls{html} \textit{<input>} text tag. The different attributes in the \textit{angucomplete-alt} node is to set some configuration to this directive, like the attribute files \textit{local-data} is the array data to search for content as auto-complete reference.
+
+\par Moreover, AngularJs itself provides native Angular directive as well. For instance, at line 17 in Code Snippet \ref{code:contact_table}, the attribute \textit{ng-class} is a native Angular directive attribute, it provides the \gls{css}\footnote{Cascading Style Sheets (CSS) is a style sheet language used for describing the look and formatting of a document written in a markup language.\cite{wiki:css}} change to some specific \gls{css} class name when some certain value matches in AngularJs expression. At line 17, the \textit{<tr>} \gls{css} attributes will be success class only if the boolean value of \textit{item.online} is true.
+
+\subsection{ContactTableDirective.js Script (Customized Directive)}
+
+\par
+
+\subsection{GoogleAPIService.js Script (Service)}
+
+\par 
 
 \section{Socket.IO Implementation}
 
