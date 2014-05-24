@@ -212,7 +212,9 @@ script(src='https://apis.google.com/js/client.js' type='text/javascript')
 
 \par The Code Snippet \ref{code:server_socket}, it is implementation of Socket.IO on the application server. From line 1 to line 13, they are the intialization process of the Socket.IO on Node.js. At line 10, it means that when the client binds with the application server through WebSocket, the listener start in handler function \textit{\_handlerSocket()}. The WebSocket channels and usage is shown in Table \ref{tab:websocket}.
 
-\par
+\par At line 27 in Code Snippet \ref{code:server_socket}, \textit{socket} object is created by the Socket.IO framework whenever one client connects with the server through WebSocket. The \textit{listener} function is implemented in the same pattern \textit{socket.on()}. There are two arguments taken by this function. The first one is the channel name, at line 27, it is \textit{sip}, and second argument is callback function when this channel got any socket message. This callback function also take one argument which is the message data sent by the client.
+
+\par At line 74 in Code Snippet \ref{code:server_socket}, it is implementation for server to send socket message back to the client through WebSocket in Socket.IO framework. \textit{socket.emit()}, this function takes two arguments, the first one is the WebSocket channel name and second one is the socket message data object. All the socket message data is formatted in \gls{json} because it is easier for both client and server side to resolve these message data.
 
 \begin{table}
 \caption{\label{tab:websocket}: Socket.IO Listening Channels}
@@ -236,10 +238,16 @@ script(src='https://apis.google.com/js/client.js' type='text/javascript')
 
 \subsection{Client Side Implementation}
 
-\par Since Socket.IO library is a library to make the communication channel between server and client, besides server side implementation, there is client side implementation(shown in Code Snippet \ref{code:client_socket} ) which is correspond to the server side implementation. 
+\par Since Socket.IO library is a library to make the communication channel between server and client, besides server side implementation, there is client side implementation(shown in Code Snippet \ref{code:client_socket} ) which is correspond to the server side implementation.
+
+\par The client side Socket.IO implementation is quite similar as the server side implementation mentioned above. The socket message event listener is implemented as the same pattern like line 3 in Code Snippet \ref{code:client_socket}. Moreover, at line 67, \textit{socket.emit()} function is used for client to send socket message through WebSocket to server in Socket.IO framework. In this way, the client has same WebSocket channels listed in Table \ref{tab:websocket} and sends the related data type to the server to request server to run some corresponding process.
  
 
 \section{SIP Implementation on Application Server}
+
+\noindent There are not many \gls{sip} stack \gls{npm}\footnote{npm is the official package manager for Node.js. As of Node.js version 0.6.3, npm is bundled and installed automatically with the environment. npm runs through the command line and manages dependencies for an application. It also allows users to install Node.js applications that are available on the npm registry.\cite{wiki:npm}} module made for Node.js. After a lot of research, this prototype system will use a simple \gls{sip} module(sip.js,\url{https://www.npmjs.org/package/sip}) on Node.js. It implements tranaction and transport layers as described in RFC3261. This library is still maintained by its author although the developer of this library is not so active during this thesis writing period. But this library is the most fit library for Node.js.
+
+\par 
 
 \section{XMS Media Server Integration on Application Server}
 
@@ -248,5 +256,3 @@ script(src='https://apis.google.com/js/client.js' type='text/javascript')
 \subsection{SMS Messaging}
 
 \subsection{Files Sharing}
-
-\subsection{Google Contacts Import}
