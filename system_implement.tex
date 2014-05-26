@@ -217,7 +217,7 @@ script(src='https://apis.google.com/js/client.js' type='text/javascript')
 \par At line 74 in Code Snippet \ref{code:server_socket}, it is implementation for server to send socket message back to the client through WebSocket in Socket.IO framework. \textit{socket.emit()}, this function takes two arguments, the first one is the WebSocket channel name and second one is the socket message data object. All the socket message data is formatted in \gls{json} because it is easier for both client and server side to resolve these message data.
 
 \begin{table}
-\caption{\label{tab:websocket}: Socket.IO Listening Channels}
+\caption{\label{tab:websocket}: Socket.IO Listening Channels in Code Snippet \ref{code:server_socket}}
 \centering
 \begin{tabular}{| c | p{3cm} | p{5.5cm} |}
 \hline
@@ -272,10 +272,112 @@ script(src='https://apis.google.com/js/client.js' type='text/javascript')
 
 \par The application server in the prototype system does not only create \gls{sip} request message and send them to \gls{sip} server, but also listens to the \gls{sip} request/response message from the \gls{sip} server.
 
+In Code Snippet \ref{code:sipjs}, from line 198 to line 307, it is the initialization function for \gls{sip} gateway on application server. There are two parts in this code block. The first part is from line 199 to line 214 in Code Snippet \ref{code:sipjs}, it is the initialization of the \gls{sip} stack on application server \textit{5060} port. It configures the \gls{sip} stack on host \gls{ip} address and host port number, also initializes the registration array for sip client credentials. Then at line 206, the function \textit{sip.start()} is to start the \gls{sip} stack listener on these \gls{sip} gateway configuration. 
+
+\par The second part of the code in in Code Snippet \ref{code:sipjs}, from line 215 to line 307, it is the \gls{sip} listener to handle different \gls{sip} request and \gls{sip} response. Since the communication protocol between \gls{webrtc} browser clients and application server is based on WebSocket not \gls{sip}. Then the \gls{sip} message to the application server is from the \gls{sip} server on the traditional telephony network. The \textit{rq} object in Code Snippet \ref{code:sipjs} is the request/response \gls{sip} stack object on application server. It is the same message object when the application send to \gls{sip} server in sip.js library. Then in the code block of this part, it is necessary to check the \textit{method} parameter of \textit{rq} object to find out which type message it is.
+
+\par For example, from line 229 to line 259 in Code Snippet \ref{code:sipjs}, it is the code block when there is \gls{sip} \textit{INVITE} request from the \gls{sip} server. It means that there is one \gls{sip} client want to call the other \gls{webrtc} browser client in the prototype system. The application firstly send back a \textit{Trying} \gls{sip} response back to the \gls{sip} server (at line 234 - 235 in Code Snippet \ref{code:sipjs}) to notice that the application server tries to find out if this contact number is online in the prototype system by using the \textit{sip.makeResponse} function. Then if the contact number is online in the prototype sytem, the application stores some necessary information data from the \textit{INVITE} request (at line 238 - 241 in Code Snippet \ref{code:sipjs}), and broadcast an internal event (\textit{SIPREMOTE}) by \textit{EventEmmitter} (init at line 12 in Code Snippet \ref{code:sipjs}) from \textit{events} module in Node.js framework. This event is used to let \textit{socket} block of application server notice the remote \gls{sip} event then send necessary WebSocket message to the client in order to notice the end point user about the \gls{sip} messages(in \textit{INVITE} example, the socket handler function is shown in Code Snippet \ref{code:socket_remote_invite} ).
+
+\begin{lstlisting}[caption={SIPREMOTE event handler for INVITE message},label={code:socket_remote_invite}]
+function _handlerSip(){
+  gw.on('SIPREMOTE', function (data) {
+      switch(data.type){
+          ...
+          
+          case 'INVITE':
+
+            var client = clients[data.content.toNumber];
+
+            if(client.inConference){
+
+              gw.sendBusy(data.content.inviteRequest,function(rs){
+                console.log('client number: ' + data.content.toNumber + 'is in the conference');
+              });
+
+            }else{
+              var id = uuid.v1();
+              callRequests[id] = _createCallRequest(id);
+
+              client.callreq_id = id;
+              client.endIceCandidate = false;
+
+              sipClients[data.content.fromNumber] = _createSipClient(data.content.fromNumber);
+              var sip = sipClients[data.content.fromNumber];
+              sip.callreq_id = id;
+
+              callRequests[id].caller = sip;
+              callRequests[id].callee = client;
+              callRequests[id].sipInviteRequest = data.content.inviteRequest;
+
+              //console.log('SIPREMOTE:INVITE: remote sip sdp' + data.content.inviteRequest.content);
+
+              xmsManager.createXMSCall({
+                callType: 'sip',
+                sdp: data.content.inviteRequest.content
+              },function(remote_xmsSDP,remote_id){
+                sip.remote_xmsSDP = remote_xmsSDP;
+                sip.remote_identifier = remote_id;
+
+                client.socket.emit('sip',{
+                  type: "createRTCoffer",
+                  inComingNumber: data.content.fromNumber,
+                  callDirection: 'outbound'
+                });
+
+                gw.sendAnswer(data.content.toNumber,
+                  data.content.inviteRequest,
+                  remote_xmsSDP,
+                  function(){
+                    console.log('200 ok answer sent');
+                });
+
+              });
+            }
+        
+            break;
+          
+          ...
+      }
+  }
+\end{lstlisting}
+
+\par In Code Snippet \ref{code:socket_remote_invite}, at line 10, it checks if the receiver of this \gls{sip} \textit{INVITE} message is in the conversation already. If not, it will send \textit{createXMSCall} request to XMS media server to create a new call resource for the \gls{sip} client and send WebSocket message about this invite to the \gls{webrtc} target client.(from line 33 to line 54 in Code Snippet \ref{code:socket_remote_invite}) The integration with XMS media server of application server will be discussed more in the later chapter.
 
 \section{XMS Media Server Integration on Application Server}
 
+\noindent XMS media server is used as media gateway in the prototype system, the main functions of it are to create call conference session for multiple clients and to convert between \gls{webrtc} \gls{sdp} and \gls{sip} \gls{sdp} in order to bridge the \gls{webrtc} clients and \gls{sip} clients on \gls{rtp} channel.
+
+\par Since the integration is only between application server and XMS media server, using \gls{rest}ful\footnote{Representational state transfer (REST) is a software architectural style consisting of a coordinated set of architectural constraints applied to components, connectors, and data elements, within a distributed hypermedia system. REST ignores the details of component implementation and protocol syntax in order to focus on the roles of components, the constraints upon their interaction with other components, and their interpretation of significant data elements.\cite{wiki:restful}} communication based on \gls{http} is a good solution to the working scenario and it is supported by XMS media server and Node.js framework on application server. The detail working flow of the prototype system integrated with XMS media server is shown in Figure \ref{fig:chrome2xms}.
+
+\par In the process of single call from \gls{webrtc} client to \gls{sip} client, the application server need to send \textit{INVITE} message with \gls{webrtc} \gls{sdp} of browser client to XMS media server(create call request) in order to request XMS media server to create \gls{webrtc} call resource and get the \gls{sdp} of this newly created call resource from XMS media server. After \gls{webrtc} and newly created call resource connected in the \gls{rtp} channel, application server sends \textit{INVITE} message without \gls{sdp}(create call request) to XMS media server in order to create \gls{sip} call resource and use the return \gls{sdp} to send \gls{sip} \textit{INVITE} message to \gls{sip} server to crate \gls{rtp} session with \gls{sip} client. At the end, application server sends \textit{join} request to XMS media server in order to joint these two created \gls{webrtc} call and \gls{sip} call resources in order to connect two different \gls{rtp} session channel. The process of multiple clients join a existing conference resource on XMS media server is a similar process as the single call example in Figure \ref{fig:chrome2xms}.
+
+\begin{figure}
+	\centering
+    	\includegraphics[width=0.95\textwidth,natwidth=610,natheight=642]{figs/chrome2xms.png}
+  	\caption{Single Call from Browser to SIP Client}
+  	\label{fig:chrome2xms}
+\end{figure}
+
+\par According to the documentation provided by Dialogic on XMS 2.1 \gls{rest}ful \gls{api}\cite{doc:xms_webapi}, it is only necessary to set \textit{encryption} field as \textit{dtls} and \textit{ice} as field \textit{yes} in the \gls{sdp} for \gls{webrtc} \gls{sdp} otherwise not set both fields for \gls{sip} \gls{sdp} when creating a call resource on XMS media server(shown at line 5-6 in Code Snippet \ref{code:xms}). It makes the interfaces on application not need to implemented differently for \gls{webrtc} and \gls{sip} clients.
+
+\par In this sense, there are \textit{createXMSCall}, \textit{joinXMSCall}, \textit{updateLocalSDP}, \textit{createConference}, \textit{joinConference}, \textit{deleteXMSCall} and \textit{deleteXMSConference} interfaces(shown in Code Snippet \ref{code:xms} ) implemented on application server by the reference of XMS 2.1 RESTful API User's Guide \cite{doc:xms_webapi}.
+
+\par Using \textit{createXMSCall} function as example of XMS integration implementation (from line 1 to line 48 in Code Snippet \ref{code:xms}), application server use \textit{http} Node.js module and \textit{xml2js} Node.js module to implement this interface. Regards to XMS 2.1 \gls{rest}ful \gls{api}, creating call resource on XMS media server is a \textit{POST} \gls{http} request with \gls{xml} request content. From line 2 to line 9 n Code Snippet \ref{code:xms} is to generate the \gls{xml} content. And at line 12, application call \textit{http.request()} function with the \textit{option} object and callback function. The request \textit{option} object has \textit{host},\textit{port},\textit{method},\textit{path},\textit{headers} fields need to be configured. The important part is the \textit{Content-length} is necessary in the headers field, it is the length of the \gls{xml} content. These are configured from line 13 to line 21 in Code Snippet \ref{code:xms}. In the callback function, application server need to check the response data from the \gls{http} \textit{POST} request. By using \textit{xml2js} module object \textit{xmlparser} to parse the \gls{xml} data into \gls{json}. From line 32 to line 34, it is the process to strip the useful data \gls{sdp} from the response data. After the other process from line 36 to line 40, it is replace some unsupported character in the \gls{sdp} for XMS media server. Finally, at line 46, application call \textit{req.write()} function to write \gls{xml} content data in \gls{http} request and send to XMS media server.
+
+\begin{figure}
+	\centering
+    	\includegraphics[width=0.95\textwidth,natwidth=610,natheight=642]{figs/sip2xms.png}
+  	\caption{Single Call from SIP Client to Browser Client}
+  	\label{fig:sip2xms}
+\end{figure}
+
+\par The rest of the interfaces for XMS media server on application server is similar as \textit{createXMSCall} interface. \textit{joinXMSCall} interface is made for single call resource join with another single call resource, it is used when a \gls{webrtc} call resource join a \gls{sip} call resource in the prototype system. \textit{updateLocalSDP} is made to update the \gls{sdp} of the call resource on the XMS media server, but it does not work well against the current XMS media server when the \gls{webrtc} call resource is made without \gls{sdp} during the test and development. For this reason, the prototype application server can not use the normal process shown in Figure \ref{fig:sip2xms} when application server got a \gls{sip} \textit{INVITE} message. During the test, after all the process for the \gls{sip} \gls{rtp} session initialization , to create the \gls{webrtc} call resource on XMS media server without \gls{sdp}, it fails to connect with browser client in the \gls{rtp} session. To fix that, the application does the same process for the \gls{webrtc} part as the process shown in Figure \ref{fig:webrtc2xms}. It means that no matter the \gls{webrtc} client is a receiver or a sender of this call request during the establishment, for \gls{webrtc} client itself will treat itself as a sender all the time, then the application server can always get the correct \gls{sdp} from the client to create the \gls{webrtc} call resource on XMS media server. This implementation of fixing solution is based on the WebSocket channels \textit{answer} and \textit{answerInvite} shown at line 61 to line 94 in Code Snippet \ref{code:client_socket} and at line 108 to line 194 in Code Snippet \ref{code:server_socket} with the \textit{self} flag value to see if the client is sender or receiver of the \textit{INVITE} message. This issue is reported to Dialogic team, hope it will be resolved in the future version of XMS media server.
+
+\par \textit{createConference} and \textit{joinConference} are the corresponding interfaces against \textit{createXMSCall} and \textit{joinXMSCall}, they are made for conference resources usage on XMS media server. \textit{deleteXMSCall} and \textit{deleteXMSConference} is the delete function for call resources and conference resources on XMS media server.
+
 \section{Advanced Communication Function Implementation}
+
+\noindent The most exciting reason for combining \gls{webrtc} technology with \gls{sip} \gls{voip} network is there are more advanced communication function could be implemented under the power of web application. There are two main advanced communication functions implemented in prototype system.
 
 \subsection{SMS Messaging}
 
