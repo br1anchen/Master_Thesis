@@ -381,4 +381,10 @@ function _handlerSip(){
 
 \subsection{SMS Messaging}
 
+\par \gls{sms} messaging is required for normal telephone usage. In the prototype system, it is necessary to have \gls{sms} messaging function during the conference if one of the participant is on his mobile phone. The working prototype is shown in Figure \ref{fig:webgui_send_sms}. The implementation is based on \gls{msg} provided by Gintel AS. It is a message service gateway for \gls{sip} clients to send \gls{sms} to other \gls{sip} clients or physical mobile phone. The implementation is shown in Code Snippet \ref{code:msg}. It uses the same \gls{http} Node.js module to implement the \gls{http} request communication with \gls{msg} server.
+
+\par There are two steps to send \gls{sms} message. The first one is to get correct \gls{msg} user credential by providing the correct \textit{loginDto} object. \textit{loginDto} is a \gls{json} object generate with the user name and password from the user. From line 3 to line 44 in Code Snippet \ref{code:msg} is the implementation of this process. At line 28 in Code Snippet, it is shown that if the credential sent to \gls{msg} server is correct, it will return a validate cookie in response data. This cookie will be used for second setup to send \gls{sms} message. From line 46 to line 94 is the implementation of second step, the login credential and cookie need to set in the header fields \textit{login} and \textit{Cookie}(shown at line 59 and 60). Moreover the message string is set in the \gls{http} request body then the \textit{Content-Type} and \textit{Content-Length} in the headers should be set as "application/json" and the length of message string content(it shows at line 57 and line 61).
+
 \subsection{Files Sharing}
+
+\par
