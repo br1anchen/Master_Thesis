@@ -150,31 +150,100 @@ a=candidate:2 2 UDP 2130706430 10.254.9.135 57345 typ host
 
 \subsection{app.js Script (AngularJs Bootstrap)}
 
-\par The \textit{app.js} script is shown in Code Snippet \ref{code:app_js}, it declares the application level module which depends on different filters, modules and services. The modules \textit{webrtcDemo.services}, \textit{webrtcDemo.controllers}, \textit{webrtcDemo.directives} and \textit{webrtcDemo.filters} are the customized modules implemented for prototype application. The rest of the module which are included as dependencies are third party AngularJs modules used in the prototype application. AngularJs developer community is quite active community, there are many useful open sourced projects or modules can be just included like the line 6 to line 15 in Code Snippet \ref{code:app_js}.
+\par The \textit{app.js} script shown in Code Snippet \ref{code:app_js}, it declares the application level module which depends on different filters, modules and services. The modules \textit{webrtcDemo.services}, \textit{webrtcDemo.controllers}, \textit{webrtcDemo.directives} and \textit{webrtcDemo.filters} are the customized modules implemented for prototype application. The rest of the module which are included as dependencies are third party AngularJs modules used in the prototype application. AngularJs developer community is quite active community, there are many useful open sourced projects or modules can be just included for using in the prototype application.
 
-\par From line 22 to line 41 is the configuration for the application level module \textit{webrtcDemo}, in the prototype application code, it used to set the application routing map. There are two main pages, one is \textit{login} page with "/login" \gls{url}(line 24,25) and the other one is \textit{phone} page with "/chat" \gls{url}(line 28,29). The Angular controllers which are bind with these page view are also declared in \textit{\$routeProvider} service in line 26 and line 30. And the default \gls{url} is set to "/login" to make sure if user has not logged in the system, he need to input the user credential to log himself.
+\par In the prototype application code, it used to set the application routing map. There are two main pages, one is \textit{login} page with "/login" \gls{url} and the other one is \textit{phone} page with "/chat" \gls{url}. The Angular controllers which are bind with these page view are also declared in \textit{\$routeProvider} service. And the default \gls{url} is set to "/login" to make sure if user has not logged in the system, he need to input the user credential to log himself. 
 
-\par From line 43 to line 49 in the Code Snippet \ref{code:app_js} are the modules declaration part for four different customized modules used in application. 
+\label{app:app_js}
+\begin{lstlisting}[caption={app.js in application client},label={code:app_js}]
+angular.module('webrtcDemo', [
+    ...
+  'webrtcDemo.services',
+  'webrtcDemo.controllers',
+  'webrtcDemo.directives',
+  'webrtcDemo.filters'
+]).
+config(function ($routeProvider, $locationProvider, $httpProvider) {
+  $routeProvider.
+    when('/chat', {
+      templateUrl: 'partials/phoneView',
+      controller: 'PhoneViewCtrl'
+    }).
+    when('/login',{
+      templateUrl: 'partials/login',
+      controller: 'LoginViewCtrl'
+    }).
+    otherwise({
+      redirectTo: '/login'
+    });
+
+  ...
+  });
+
+\end{lstlisting}
 
 \subsection{contactTable.jade Script (View)}
 
 \par The \textit{contactTable.jade} script is the view component of the AngularJs. It is a Jade\footnote{Jade is a high performance template engine heavily influenced by Haml and implemented with JavaScript for node.\cite{github:jade}} script file. The template engine used on Node.js in prototype application is Jade which provides more clear way to program \gls{html} node template scripts. In the Code Snippet \ref{code:contact_table}, Jade has the same node name as normal node template engine \gls{ejs} and some Angular directives in the template. For example, at line 2 in Code Snippet \ref{code:contact_table}, the \textit{angucomplete-alt} directive is a third party Angular directive to provide auto-completion features in \gls{html} \textit{<input>} text tag. The different attributes in the \textit{angucomplete-alt} node is to set some configuration to this directive, like the attribute files \textit{local-data} is the array data to search for content as auto-complete reference.
 
-\par Moreover, AngularJs itself provides native Angular directive as well. For instance, at line 17 in Code Snippet \ref{code:contact_table}, the attribute \textit{ng-class} is a native Angular directive attribute, it provides the \gls{css}\footnote{Cascading Style Sheets (CSS) is a style sheet language used for describing the look and formatting of a document written in a markup language.\cite{wiki:css}} change to some specific \gls{css} class name when some certain value matches in AngularJs expression. At line 17, the \textit{<tr>} tag's \gls{css} attributes will be success class only if the boolean value of \textit{item.online} is \textit{true}.
+\par Moreover, AngularJs itself provides native Angular directive as well. For instance, at line 11 in Code Snippet \ref{code:contact_table}, the attribute \textit{ng-class} is a native Angular directive attribute, it provides the \gls{css}\footnote{Cascading Style Sheets (CSS) is a style sheet language used for describing the look and formatting of a document written in a markup language.\cite{wiki:css}} change to some specific \gls{css} class name when some certain value matches in AngularJs expression. At line 11, the \textit{<tr>} tag's \gls{css} attributes will be success class only if the boolean value of \textit{item.online} is \textit{true}.
 
-\par AngularJs provides two-way data module binding in the template and controller. Line 63 in the Code Snippet \ref{code:contact_table}, \textit{\{\{item.number\}\}} is the Angular template to display the \textit{number} property value of \textit{item} object in the \gls{html} template. And line 21 is the example of Angular template integrated with Angular filter, the third-party filter \textit{iif} here is the filter to check the \textit{\{\{item.online\}\}} value if it is \textit{true} or \textit{false}. If it is \textit{true} then it will show \textit{Online} string text in the \gls{html} template otherwise it will show \textit{Offline} string text. The syntax here is quite similar to any other programming language.
+\par AngularJs provides two-way data module binding in the template and controller. Line 17 in the Code Snippet \ref{code:contact_table}, \textit{\{\{item.number\}\}} is the Angular template to display the \textit{number} property value of \textit{item} object in the \gls{html} template. And line 14 is the example of Angular template integrated with Angular filter, the third-party filter \textit{iif} here is the filter to check the \textit{\{\{item.online\}\}} value if it is \textit{true} or \textit{false}. If it is \textit{true} then it will show \textit{Online} string text in the \gls{html} template otherwise it will show \textit{Offline} string text. The syntax here is quite similar to any other programming language.
+
+\begin{lstlisting}[caption={contactTable.jade in application client},label={code:contact_table}]
+div(id = "contactTable")
+	angucomplete-alt(id="contactSearch",
+		...
+		local-data="contactsHolder.contacts",
+		...)
+	tabset
+		tab(heading = "Conacts")
+			table(id = "contacts", at-table, at-paginated, at-list="contactsHolder.contacts | orderBy:online", at-config="config",class="table table-hover table-striped table-condensed" )
+				thead
+				tbody
+					tr(ng-class = "{success: item.online}", ng-init = "item.hvor = false", ng-mouseenter = "contactHvor(item)", ng-mouseleave = "contactHvor(item)")
+						...
+							p(ng-hide = "item.hvor").
+								{{item.online | iif : "Online" : "Offline" }}
+                        ...
+							p
+								| Telephone : {{item.number}}
+			...
+\end{lstlisting}
 
 \subsection{ContactTableDirective.js Script (Customized Directive)}
 
-\par After creating the view of contact table component, it is necessary to make a customized directive to bind controller to the view. It is called \textit{Directive} in AngularJs, the \textit{ContactTableDirective.js} script is shown in Code Snippet \ref{code:contact_table_dir}. From line 10 to line 20 is the directive declaration, it sets the \textit{templateUrl} to 'partials/contactTable' which is the view component of contact table file path and binds the controller which name \textit{ContactsCtrl} to the view component. The \textit{restrict} filed in the directive is to set the template type for \textit{ContactTableDirective}, in the Code Snippet \ref{code:contact_table_dir} line 13, it means this directive is a \gls{html} element template, it can be used as normal \gls{html} element by using name 'contact-table'.
+\par After creating the view of contact table component, it is necessary to make a customized directive to bind controller to the view. It is called \textit{Directive} in AngularJs, the \textit{ContactTableDirective.js} script is shown in Code Snippet \ref{code:contact_table_dir}. From line 1 to line 12 is the directive declaration, it sets the \textit{templateUrl} to 'partials/contactTable' which is the view component of contact table file path and binds the controller which name \textit{ContactsCtrl} to the view component. The \textit{restrict} filed in the directive is to set the template type for \textit{ContactTableDirective}, in the Code Snippet \ref{code:contact_table_dir} line 5, it means this directive is a \gls{html} element template, it can be used as normal \gls{html} element by using name 'contact-table'.
 
-\par From line 22 to line 27 is the Angular filter declaration, there is one filter name \textit{iif}, the only function it does is to check the \textit{input} value and return \textit{trueValue} if \textit{input} is \textit{true} otherwise return \textit{falseValue}. The usage is described in previous section in line 21 of the Code Snippet \ref{code:contact_table}.
+\par From line 14 to line 19 is the Angular filter declaration, it is a filter name \textit{iif}, the only function it does is to check the \textit{input} value and return \textit{trueValue} if \textit{input} is \textit{true} otherwise return \textit{falseValue}. The usage is described in previous section in line 14 of the Code Snippet \ref{code:contact_table}.
+
+\begin{lstlisting}[caption={ContactTableDirective.js in application client},label={code:contact_table_dir}]
+angular.module('webrtcDemo.directives').
+	directive('contactTable',function () {
+
+		return{
+			restrict: 'E',
+			replace: true,
+			scope: true,
+			templateUrl: 'partials/contactTable',
+			controller: 'ContactsCtrl'
+		};
+
+	});
+
+angular.module('webrtcDemo.filters').
+	filter('iif', function () {
+   return function(input, trueValue, falseValue) {
+        return input ? trueValue : falseValue;
+  };
+});
+\end{lstlisting}
 
 \subsection{ContactsCtrl.js Script (Controller)}
 
-\par The controller in AngularJs is to control the user interface logic and bridge the data business logic from the services to the user interface views. The example controller in Code Snippet \ref{code:contact_ctrl} controls the contactTable view directive and get data from GoogleAPIService. In the line 10 of Code Snippet \ref{code:contact_ctrl}, in the controller construction function, there are several services arguments. They are the services this controller will use in the application, one of them is \textit{GoogleAPIService} which is related to the contacts information data. The contactTable view directive need contacts information data to show in the \gls{html} template. And \textit{storage} is another service provides \\textit{localstorage} function in \gls{html5} application. This service is used to store the contacts information data locally to make user no need to import his Google contacts information all the time. This function is implemented at line 82 of the Code Snippet \ref{code:contact_ctrl}.
+\par The controller in AngularJs is to control the user interface logic and bridge the data business logic from the services to the user interface views. The example controller in Code Snippet \ref{code:contact_ctrl} controls the contactTable view directive and get data from GoogleAPIService. At the line 2 of Code Snippet \ref{code:contact_ctrl}, in the controller construction function, there are several services arguments. They are the services this controller will use in the application, one of them is \textit{GoogleAPIService} which is related to the contacts information data. The contactTable view directive need contacts information data to show in the \gls{html} template. And \textit{storage} is another service provides \\textit{localstorage} function in \gls{html5} application. This service is used to store the contacts information data locally to make user no need to import his Google contacts information all the time. This function is implemented at line 23 of the Code Snippet \ref{code:contact_ctrl}.
 
-\par At line 56 of the Code Snippet \ref{code:contact_ctrl}, it is the function \textit{\$scope.importContacts}, the reason this function is under \textit{\$scope} object is because this function is directly triggered by one \gls{ui} button. In this function, there are two Javascript promise function from the \textit{GoogleAPIService}. One is \textit{GoogleAPIService.oAuth()} function which is to ask user to get Google \gls{api} permission to query the Google Contacts \gls{api}. The other one is after get the Google \gls{api} permission to query the contacts information data by Google Contacts \gls{api}.
+\par At line 5 of the Code Snippet \ref{code:contact_ctrl}, it is the function \textit{\$scope.importContacts}, the reason this function is under \textit{\$scope} object is because this function is directly triggered by one \gls{ui} button. In this function, there are two Javascript promise function from the \textit{GoogleAPIService}. One is \textit{GoogleAPIService.oAuth()} function which is to ask user to get Google \gls{api} permission to query the Google Contacts \gls{api}. The other one is after get the Google \gls{api} permission to query the contacts information data by Google Contacts \gls{api}.
 
 \par \textit{Promise} object is the new concept in the Javascript and AngularJs. The core idea behind promises is that a promise represents the result of an asynchronous operation. A promise is in one of three different states:\cite{website:promise}
 \begin{itemize}[topsep=-1em,parsep=0em,itemsep=0em]
@@ -182,15 +251,47 @@ a=candidate:2 2 UDP 2130706430 10.254.9.135 57345 typ host
  \item \textbf{Fulfilled} - The state of a promise representing a successful operation.
  \item \textbf{Rejected} - The state of a promise representing a failed operation.
 \end{itemize}
-It is the very cool concept in the AngularJs. Since everything in Javascript is asynchronous operation, then promise object function is used to deal with the function calling after previous asynchronous operation success. The implementation of these two promise functions will be covered in the next section.
+It is a great concept in the AngularJs. Since everything in Javascript is asynchronous operation, then promise object function is used to deal with the function calling after previous asynchronous operation success. The implementation of these two promise functions will be covered in the next section.
 
-\par From line 60 to line 78 is the process to filter out the useful information from the response data to get the correct contact information into \textit{contact} object, then push them one by one into a \textit{contact} object array in order to be used by contact table view component.
+\par From line 9 to line 15 is the process to filter out the useful information from the response data to get the correct contact information into \textit{contact} object, then push them one by one into a \textit{contact} object array in order to be used by contact table view component.
+
+\begin{lstlisting}[caption={ContactsCtrl.js in application client},label={code:contact_ctrl}]
+angular.module('webrtcDemo.controllers').
+	controller('ContactsCtrl',function ($scope,$location,WebSocketService,GoogleAPIService,storage,$filter) {
+		...
+		
+		$scope.importContacts = function(){
+			$scope.contactsHolder.contacts = [];
+			GoogleAPIService.oAuth().then(function(token){
+				GoogleAPIService.queryContacts(token).then(function(data){
+					angular.forEach(data.feed.entry,function(person, key){
+						if(person['gd$phoneNumber']){
+							var contact = {
+								name: person.title['$t'],
+								number: person['gd$phoneNumber'][0]['$t'],
+								online: false
+							}
+
+							...
+
+						}
+					});
+
+					storage.set('contactList-' + username,$scope.contactsHolder.contacts);
+
+				});
+			});
+		}
+
+	});
+\end{lstlisting}
+
 
 \subsection{GoogleAPIService.js Script (Service)}
 
 \par AngularJs service provides most of the business logic of the application. Like the sample code shown in Code Snippet \ref{code:google_api}, it provides interfaces of Google \gls{api} to the controller. There are two interfaces in the \textit{GoogleAPIService.js} script. One is Google authorization login and get the user permission, the other one is fetching Google contacts information from the Google Contacts \gls{api}.
 
-\par From line 14 to line 30 in Code Snippet \ref{code:google_api}, it is the promise function, \textit{\_authLogin()}, to get Google authorization token in order to call any Google \gls{api} later. It uses \textit{\$q} service from AngularJs to provide \textit{deferred} \gls{api} and \textit{prmoise} \gls{api}. The purpose of the deferred object is to expose the associated Promise instance as well as \gls{api}s that can be used for signaling the successful or unsuccessful completion, as well as the status of the task.The purpose of the promise object is to allow for interested parties to get access to the result of the deferred task when it completes.\cite{angular:q} At line 15 and line 29 is the code to create a new instance of deferred and a new promise instance. From line 17 to 20, it is the configuration object for Google \gls{api} authorization. The \textit{gapi} object is from the Google \gls{api} Javascript client script included in \textit{index.jade} shown in Code Snippet \ref{code:include_googleapi}.
+\par From line 4 to line 20 in Code Snippet \ref{code:google_api}, it is the promise function, \textit{\_authLogin()}, to get Google authorization token in order to call any Google \gls{api} later. It uses \textit{\$q} service from AngularJs to provide \textit{deferred} \gls{api} and \textit{prmoise} \gls{api}. The purpose of the deferred object is to expose the associated Promise instance as well as \gls{api}s that can be used for signaling the successful or unsuccessful completion, as well as the status of the task.The purpose of the promise object is to allow for interested parties to get access to the result of the deferred task when it completes.\cite{angular:q} At line 5 and line 23 is the code to create a new instance of deferred and a new promise instance. From line 7 to 10, it is the configuration object for Google \gls{api} authorization. The \textit{gapi} object is from the Google \gls{api} Javascript client script included in \textit{index.jade} shown in Code Snippet \ref{code:include_googleapi}.
 
 \begin{lstlisting}[caption={Include Google API Javascript file in Index.iade},label={code:include_googleapi}]
 script(src='https://apis.google.com/js/client.js' type='text/javascript')
@@ -198,11 +299,51 @@ script(src='https://apis.google.com/js/client.js' type='text/javascript')
 
 \par Since application only need to get permission form user Google Contacts, then the scope is set to \url{https://www.google.com/m8/feeds} and the client\_id is got from the Google App Engine (\url{https://console.developers.google.com}). Developer need to create his own Google App project then set the \gls{api}s which the project will ask user permission to use and the credentials used for client or web service. In the prototype system, it is the web application client to use the Google Contacts \gls{api} then there is a client \gls{oauth} 2.0\footnote{OAuth is an open standard for authorization. OAuth provides client applications a 'secure delegated access' to server resources on behalf of a resource owner.OAuth 2.0 is the next evolution of the OAuth protocol and is not backwards compatible with OAuth 1.0. OAuth 2.0 focuses on client developer simplicity while providing specific authorization flows for web applications, desktop applications, mobile phones, and living room devices.\cite{wiki:oauth}} credential created on Google App project.
 
-\par Then the \textit{gapi} object call \textit{auth.authorize()} function with the configuration object to get authorization token. At line 25, when the asynchronous process is finished, \textit{deferred} object to call \textit{resolve} function to send the token object back to the promise \textit{then} function at line 58 in Code Snippet \ref{code:contact_ctrl} which is mentioned at previous section.
+\par Then the \textit{gapi} object call \textit{auth.authorize()} function with the configuration object to get authorization token. At line 15, when the asynchronous process is finished, \textit{deferred} object to call \textit{resolve} function to send the token object back to the promise \textit{then} function at line 7 in Code Snippet \ref{code:contact_ctrl} which is mentioned at previous section.
 
-\par From line 32 to line 45 in Code Snippet \ref{code:google_api} is another promise function, \textit{\_fetchContacts()} , to fetch the Google contacts information data after getting user permission to use their Google service data. This function makes a \gls{http} request in \gls{jsonp} to fetch all the contacts information from Google Contacts \gls{api}. \gls{jsonp} is a communication technique used in JavaScript programs running in web browsers to request data from a server in a different domain, something prohibited by typical web browsers because of the same-origin policy. \gls{jsonp} takes advantage of the fact that browsers do not enforce the same-origin policy on \textit{<script>} tags. Th reason the application uses \gls{jsonp} in \gls{http} request is that web application is host in one origin domain and Google \gls{api} server is in another origin domain, it is cross domain request when prototype application request for data from Google \gls{api} server. And Google \gls{api} server does not support cross domain request, but with \gls{jsonp} it is allowed to have cross origin domain resources sharing.
+\par From line 22 to line 34 in Code Snippet \ref{code:google_api} is another promise function, \textit{\_fetchContacts()} , to fetch the Google contacts information data after getting user permission to use their Google service data. This function makes a \gls{http} request in \gls{jsonp} to fetch all the contacts information from Google Contacts \gls{api}. \gls{jsonp} is a communication technique used in JavaScript programs running in web browsers to request data from a server in a different domain, something prohibited by typical web browsers because of the same-origin policy. \gls{jsonp} takes advantage of the fact that browsers do not enforce the same-origin policy on \textit{<script>} tags. Th reason the application uses \gls{jsonp} in \gls{http} request is that web application is host in one origin domain and Google \gls{api} server is in another origin domain, it is cross domain request when prototype application request for data from Google \gls{api} server. And Google \gls{api} server does not support cross domain request, but with \gls{jsonp} it is allowed to have cross origin domain resources sharing.
 
 \par The \textit{\_fetchContacts()} function uses the same mechanism as \textit{\_authLogin()} function described above to make promise function, it returns contacts information data from Google Contacts \gls{api}.
+
+\begin{lstlisting}[caption={GoogleAPIService.js in application client},label={code:google_api}]
+angular.module('webrtcDemo.services').
+	factory('GoogleAPIService', function ($q,$http,storage) {
+
+		function _authLogin(){
+			var deferred = $q.defer();
+
+			var config = {
+		      'client_id': 'xxxxxxxxxxxxxxx.apps.googleusercontent.com',
+		      'scope': 'https://www.google.com/m8/feeds'
+		    };
+	    gapi.auth.authorize(config, function() {
+
+	      console.log('login complete');
+	      console.log(gapi.auth.getToken());
+	      deferred.resolve(gapi.auth.getToken());
+
+	    });
+
+	    return deferred.promise;
+		}
+
+		function _fetchContacts(authToken){
+			...
+			
+			$http.jsonp(url).
+	    success(function(data, status, headers, config) {
+	      deferred.resolve(data);
+	    }).
+	    error(function(data, status, headers, config) {
+	      deferred.reject('GoogleAPIService:queryContacts:Failed');
+	    });
+
+			return deferred.promise;
+		}
+
+		...
+	});
+\end{lstlisting}
 
 \section{Socket.IO Implementation}
 
