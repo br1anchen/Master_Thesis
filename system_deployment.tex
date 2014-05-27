@@ -54,4 +54,4 @@ Installation and Configuration Guide\cite{dialogic:xms_install},the default Powe
 \end{itemize}
 
 \par Because the application server and XMS media server in the prototype system are host in the corporation network, it only opens necessary port to the public network. During the exchange \gls{ice} candidate information for client, the XMS \gls{ip} address will be the internal \gls{ip} address by the rule of the corporation network. It is necessary to change the internal \gls{ip} address into public \gls{ip} address before pushing the \gls{ice} candidate information back to the end point client. This process is implemented at line 37 in Code Snippet \ref{code:xms}, it simply just replaces the internal \gls{ip} address as public \gls{ip} address of XMS media server in the \gls{sdp} content string.
-
+
