@@ -228,26 +228,11 @@ module.exports.XmsManager = XmsManager;
 
 \begin{lstlisting}[caption={msg.js on Application Server},label={code:msg}]
 MsgManager.prototype.login = function(loginDto,success,fail){
-
 	var loginStr = JSON.stringify(loginDto);
-
-	var options = {
-		host: msgRestUrl,
-		path: '/your/url/here/loginWithDto',
-		method : 'POST',
-		headers: {
-			"Accept" : "application/json",
-			"Content-Type" : "application/json",
-			'Content-Length' : loginStr.length
-		}
-	};
-
+	...
 	var req = https.request(options, function(res) {
 		var resData = '';
-	  console.log("MSG:LOGIN:statusCode: ", res.statusCode);
-	  console.log("MSG:LOGIN:headers: ", res.headers);
 	  res.setEncoding('utf8');
-
 	  res.on('data', function (chunk) {
       resData += chunk;
     }).on('end', function() {
@@ -261,22 +246,13 @@ MsgManager.prototype.login = function(loginDto,success,fail){
     	}
     });
 	});
-
 	req.write(loginStr);
 	req.end();
-
-	req.on('error', function(e) {
-	  console.error(e);
-	  fail(e);
-	});
-
+	...
 }
 
 MsgManager.prototype.sendSMS = function(organization,login,cookie,msgObj,success,fail){
-
 	var msgStr = JSON.stringify(msgObj);
-	console.log(msgObj);
-
 	var options = {
 		host: msgRestUrl,
 		path: '/your/url/here/sms',
@@ -293,9 +269,7 @@ MsgManager.prototype.sendSMS = function(organization,login,cookie,msgObj,success
 
 	var req = https.request(options, function(res) {
 		var resData = '';
-	  console.log("MSG:SENDSMS:statusCode: ", res.statusCode);
-	  console.log("MSG:SENDSMS:headers: ", res.headers);
-	  res.setEncoding('utf8');
+		res.setEncoding('utf8');
 
 	  res.on('data', function (chunk) {
       resData += chunk;
@@ -311,15 +285,8 @@ MsgManager.prototype.sendSMS = function(organization,login,cookie,msgObj,success
     	}
     });
 	});
-
 	req.write(msgStr);
 	req.end();
-
-	req.on('error', function(e) {
-	  console.error(e);
-	  fail();
-	});
-
 }
 
 module.exports.MsgManager = MsgManager;
