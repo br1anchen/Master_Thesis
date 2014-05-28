@@ -184,15 +184,11 @@ module.exports.SipGateway = SipGateway;
 \begin{lstlisting}[caption={xms.js on Application Server},label={code:xms}]
 XmsManager.prototype.createXMSCall = function(data,callback){
   var requestContent = "<web_service version=\"1.0\">";
-  requestContent += "\n<call";
-  requestContent += " sdp=\"" + data.sdp.replace(/\r\n/g, "&#xA;") + "\"";
+  ...
   if(data.callType === 'webrtc'){
     requestContent += " encryption=\"dtls\"" + " ice=\"yes\"";
   }
-  requestContent += " media=\"audiovideo\"" + " signaling= \"no\"/>";
-  requestContent += "\n</web_service>";
-
-  console.log(requestContent);
+  ...
   var req = http.request({
     host: xmsAddress,
     port: xmsPort,
@@ -205,10 +201,7 @@ XmsManager.prototype.createXMSCall = function(data,callback){
     }
   }, function(res) {
     var resData = '';
-    console.log('createXMSCall:STATUS: ' + res.statusCode);
-    console.log('createXMSCall:HEADERS: ' + JSON.stringify(res.headers));
     res.setEncoding('utf8');
-
     res.on('data', function (chunk) {
       resData += chunk;
     }).on('end', function() {
@@ -216,241 +209,17 @@ XmsManager.prototype.createXMSCall = function(data,callback){
         xmlparser.parseString(resData,function(err,result){
           var xmsSdp = result['web_service']['call_response'][0]['$'].sdp;
           var id = result['web_service']['call_response'][0]['$'].identifier;
-
           var regex = new RegExp(xmsAddress,"g");
           pub_xmsSdp = xmsSdp.replace(regex,xmsPublicAddress);
-          console.log('after create call sdp: ' + pub_xmsSdp);
-
           callback(pub_xmsSdp.replace(/\n/g,"\r\n"),id);
         });
       }
     });
   });
-
   req.write(requestContent);
   req.end();
 }
-
-XmsManager.prototype.joinXMSCall = function(call,callback){
-  var requestContent = "<web_service version=\"1.0\">";
-  requestContent += "\n<call>";
-  requestContent += "\n<call_action>";
-  requestContent += "\n<join call_id=\"" + call.remote_identifier + "\"/>";
-  requestContent += "\n</call_action>";
-  requestContent += "\n</call>";
-  requestContent += "\n</web_service>";
-
-  var joinPath = xmsPath + 'calls/' + call.local_identifier + '?appid=' + xmsAppId;
-
-  var req = http.request({
-    host: xmsAddress,
-    port: xmsPort,
-    method: 'PUT',
-    path: joinPath,
-    headers: {
-      'Accept' : 'application/xml',
-      'Content-Type' : 'application/xml',
-      'Content-Length' : requestContent.length
-    }
-  }, function(res) {
-    var resData = '';
-    console.log('joinXMSCall:STATUS: ' + res.statusCode);
-    console.log('joinXMSCall:HEADERS: ' + JSON.stringify(res.headers));
-    res.setEncoding('utf8');
-
-    res.on('data', function (chunk) {
-      resData += chunk;
-    }).on('end', function() {
-      if(resData != ''){
-        callback(resData);
-      }
-    });
-  });
-
-  req.write(requestContent);
-  req.end();
-}
-
-XmsManager.prototype.updateLocalSDP = function(newSDP,call,callback){
-  var requestContent = "<web_service version=\"1.0\">";
-  requestContent += "\n<call" + " sdp=\""
-    + newSDP.replace(/\r\n/g, "&#xA;") + "\"";
-  requestContent += " encryption=\"dtls\"" + " ice=\"yes\"";
-  requestContent += " media=\"audiovideo\"" + " signaling= \"no\"/>";
-  requestContent += "\n</web_service>";
-
-  var updatePath = xmsPath + 'calls/' + call.local_identifier + '?appid=' + xmsAppId;
-  //console.log('update request content: '+ requestContent);
-
-  var req = http.request({
-    host: xmsAddress,
-    port: xmsPort,
-    method: 'PUT',
-    path: updatePath,
-    headers: {
-      'Accept' : 'application/xml',
-      'Content-Type' : 'application/xml',
-      'Content-Length' : requestContent.length
-    }
-  }, function(res) {
-    var resData = '';
-    console.log('updateLocalSDP:STATUS: ' + res.statusCode);
-    console.log('updateLocalSDP:HEADERS: ' + JSON.stringify(res.headers));
-    res.setEncoding('utf8');
-
-    res.on('data', function (chunk) {
-      resData += chunk;
-    }).on('end', function() {
-      if(resData != ''){
-        xmlparser.parseString(resData,function(err,result){
-          var xmsSdp = result['web_service']['call_response'][0]['$'].sdp;
-
-          //console.log('after update sdp: ' + xmsSdp);
-          if(xmsSdp){
-            xmsSdp = xmsSdp.replace(xmsAddress,xmsPublicAddress);
-            callback(xmsSdp.replace(/\n/g,"\r\n"));
-          }else{
-            callback(null);
-          }
-
-        });
-      }
-    });
-  });
-
-  req.write(requestContent);
-  req.end();
-}
-
-XmsManager.prototype.createConference = function(options,callback){
-  var requestContent = "<web_service version=\"1.0\">";
-  requestContent += "\n<conference type=\"" + options.type + "\" max_parties=\"" + options.max_p + "\" reserve=\"" + options.reserve + "\"";
-  requestContent += " layout=\"" + options.layout + "\" caption=\"" + options.caption + "\"";
-  requestContent += " caption_duration=\"30s\" beep=\"yes\" clamp_dtmf=\"yes\" auto_gain_control=\"yes\" echo_cancellation=\"yes\" />";
-  requestContent += "\n</web_service>"
-
-  //console.log("createConference: " + requestContent);
-  var createConfPath = xmsPath + '/conferences?appid=' + xmsAppId;
-  //console.log("createConference path: " + createConfPath);
-
-  var req = http.request({
-    host: xmsAddress,
-    port: xmsPort,
-    method: 'POST',
-    path: createConfPath,
-    headers: {
-      'Accept' : 'application/xml',
-      'Content-Type' : 'application/xml',
-      'Content-Length' : requestContent.length
-    }
-  }, function(res) {
-    var resData = '';
-    console.log('createConference:STATUS: ' + res.statusCode);
-    console.log('createConference:HEADERS: ' + JSON.stringify(res.headers));
-    res.setEncoding('utf8');
-
-    res.on('data', function (chunk) {
-      resData += chunk;
-    }).on('end', function() {
-      if(resData != ''){
-        xmlparser.parseString(resData,function(err,result){
-          var conf_id = result['web_service']['conference_response'][0]['$'].identifier;
-
-          callback(conf_id);
-
-        });
-      }
-    });
-  });
-
-  req.write(requestContent);
-  req.end();
-}
-
-XmsManager.prototype.joinConference = function(call_id,conf_id,options,callback){
-  var requestContent = "<web_service version=\"1.0\">";
-  requestContent += "\n<call>";
-  requestContent += "\n<call_action>";
-  requestContent += "\n<add_party conf_id=\"" + conf_id + "\" caption=\"" + options.caption + "\"";
-  requestContent += " region=\"" + options.region + "\" audio=\"" + options.audio + "\" video=\"" + options.video + "\" />";
-  requestContent += "\n</call_action>";
-  requestContent += "\n</call>";
-  requestContent += "\n</web_service>";
-
-  console.log("joinConference: " + requestContent);
-  var joinPath = xmsPath + 'calls/' + call_id + '?appid=' + xmsAppId;
-
-  var req = http.request({
-    host: xmsAddress,
-    port: xmsPort,
-    method: 'PUT',
-    path: joinPath,
-    headers: {
-      'Accept' : 'application/xml',
-      'Content-Type' : 'application/xml',
-      'Content-Length' : requestContent.length
-    }
-  }, function(res) {
-    var resData = '';
-    console.log('joinConference:STATUS: ' + res.statusCode);
-    console.log('joinConference:HEADERS: ' + JSON.stringify(res.headers));
-    res.setEncoding('utf8');
-
-    res.on('data', function (chunk) {
-      resData += chunk;
-    }).on('end', function() {
-      if(resData != '' && res.statusCode === 200){
-
-        callback('yes');
-
-      }
-    });
-  });
-
-  req.write(requestContent);
-  req.end();
-}
-
-XmsManager.prototype.deleteXMSCall = function(callId,callback){
-  var deletePath = xmsPath + 'calls/' + callId + '?appid=' + xmsAppId;
-
-  var req = http.request({
-    host: xmsAddress,
-    port: xmsPort,
-    method: 'DELETE',
-    path: deletePath
-  },function(res){
-    console.log('deleteXMSCall:STATUS: ' + res.statusCode);
-    console.log('deleteXMSCall:HEADERS: ' + JSON.stringify(res.headers));
-    res.setEncoding('utf8');
-
-    callback(res);
-  });
-
-  req.end();
-}
-
-XmsManager.prototype.deleteXMSConference = function(confId,callback){
-
-  var deletePath = xmsPath + 'conferences/' + confId + '?appid=' + xmsAppId;
-
-  var req = http.request({
-    host: xmsAddress,
-    port: xmsPort,
-    method: 'DELETE',
-    path: deletePath
-  },function(res){
-    console.log('deleteXMSConference:STATUS: ' + res.statusCode);
-    console.log('deleteXMSConference:HEADERS: ' + JSON.stringify(res.headers));
-    res.setEncoding('utf8');
-
-    callback(res);
-  });
-
-  req.end();
-
-}
-
+...
 module.exports.XmsManager = XmsManager;
 \end{lstlisting}
 
