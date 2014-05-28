@@ -508,34 +508,12 @@ function _handlerSip(){
   gw.on('SIPREMOTE', function (data) {
       switch(data.type){
           ...
-          
           case 'INVITE':
-
             var client = clients[data.content.toNumber];
-
             if(client.inConference){
-
-              gw.sendBusy(data.content.inviteRequest,function(rs){
-                console.log('client number: ' + data.content.toNumber + 'is in the conference');
-              });
-
+                ...
             }else{
-              var id = uuid.v1();
-              callRequests[id] = _createCallRequest(id);
-
-              client.callreq_id = id;
-              client.endIceCandidate = false;
-
-              sipClients[data.content.fromNumber] = _createSipClient(data.content.fromNumber);
-              var sip = sipClients[data.content.fromNumber];
-              sip.callreq_id = id;
-
-              callRequests[id].caller = sip;
-              callRequests[id].callee = client;
-              callRequests[id].sipInviteRequest = data.content.inviteRequest;
-
-              //console.log('SIPREMOTE:INVITE: remote sip sdp' + data.content.inviteRequest.content);
-
+              ...
               xmsManager.createXMSCall({
                 callType: 'sip',
                 sdp: data.content.inviteRequest.content
@@ -548,25 +526,15 @@ function _handlerSip(){
                   inComingNumber: data.content.fromNumber,
                   callDirection: 'outbound'
                 });
-
-                gw.sendAnswer(data.content.toNumber,
-                  data.content.inviteRequest,
-                  remote_xmsSDP,
-                  function(){
-                    console.log('200 ok answer sent');
-                });
-
+                ...
               });
             }
-        
-            break;
-          
-          ...
+        ...
       }
   }
 \end{lstlisting}
 
-\par In Code Snippet \ref{code:socket_remote_invite}, at line 10, it checks if the receiver of this \gls{sip} \textit{INVITE} message is in the conversation already. If not, it will send \textit{createXMSCall} request to XMS media server to create a new call resource for the \gls{sip} client and send WebSocket message about this invite to the \gls{webrtc} target client.(from line 33 to line 54 in Code Snippet \ref{code:socket_remote_invite}) The integration with XMS media server of application server will be discussed more in the later chapter.
+\par In Code Snippet \ref{code:socket_remote_invite}, at line 7, it checks if the receiver of this \gls{sip} \textit{INVITE} message is in the conversation already. If not, it will send \textit{createXMSCall} request to XMS media server to create a new call resource for the \gls{sip} client(at line 11 in Code Snippet \ref{code:socket_remote_invite}) and send WebSocket message (from line 18 to line 22 in Code Snippet \ref{code:socket_remote_invite}) about this invite to the \gls{webrtc} target client. The integration with XMS media server of application server will be discussed more in the later chapter.
 
 \section{XMS Media Server Integration on Application Server}
 
@@ -630,7 +598,70 @@ function _handlerSip(){
 
 \par At line 16 in Code Snippet \ref{code:server_socket}, it declare the \textit{delivery} object using Delivery.js \gls{api} \textit{dl.listen()} with the Socket.IO \textit{socket} object as the argument. From line 643 to line 676 in Code Snippet \ref{code:server_socket} is the server side Delivery.js implementation code. It listens on the 'receive.success' WebSocket channel, when the upload files from client are received successfully the application server will make temporary files for the upload files and push these files to every connected clients in sender's current conference session. For security reasons, the temporary files will be removed from the server when all the pushing process finished.
 
-\par After the files pushed to the client, at line 88 to line 102 in Code Snippet \ref{code:chatboard_ctrl}, the client side implementation will listen the same WebSocket channel 'receive.success'. When there is file message from the application server to the client, the client listener will saved the files in the runtime memory (it is not best solution for files sharing case, the improvement will be discussed in Chapter \ref{chp:future_work}), then let the user decide if these files need to be downloaded or removed.
+\par After the files pushed to the client, at line 42 in Code Snippet \ref{code:chatboard_ctrl}, the client side implementation will listen the same WebSocket channel 'receive.success'. When there is file message from the application server to the client, the client listener will saved the files in the runtime memory (it is not best solution for files sharing case, the improvement will be discussed in Chapter \ref{chp:future_work}), then let the user decide if these files need to be downloaded or removed. At line 32 in Code Snippet \ref{code:chatboard_ctrl}, it is the client side sending files function (\textit{delivery.send()}) to the server through WebSocket.
 
-\par Because Delivery.js sends files in base64\footnote{Base64 is a group of similar binary-to-text encoding schemes that represent binary data in an ASCII string format by translating it into a radix-64 representation. The term Base64 originates from a specific MIME content transfer encoding.\cite{wiki:base64}} encoding format, on the client application, it is necessary to convert base64 encoding string to Web Blob\footnote{A Blob object represents a file-like object of immutable, raw data. Blobs represent data that isn't necessarily in a JavaScript-native format. The File interface is based on Blob, inheriting blob functionality and expanding it to support files on the user's system.\cite{mdn:blob}} data for using the \gls{html5} \gls{w3c} \textit{saveAs()} function. The converting function is implemented at line 22 to line 44 as \textit{b64toBlob()} function, it takes base64 string, content type of the file and slice size (in the prototype case it uses default 512 bit) to convert base64 string data to Web Blob data.
+\begin{lstlisting}[caption={Files Sharing in ChatBoardCtrl.js},label={code:chatboard_ctrl}]
+angular.module('webrtcDemo.controllers').
+	controller('ChatBoardCtrl',function ($scope,$location,$upload,WebSocketService,storage,appId) {
+		...
+		function b64toBlob(b64Data, contentType, sliceSize) {
+	    contentType = contentType || '';
+	    sliceSize = sliceSize || 512;
+
+	    var byteCharacters = atob(b64Data);
+	    var byteArrays = [];
+
+	    for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+	        var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+	        var byteNumbers = new Array(slice.length);
+	        for (var i = 0; i < slice.length; i++) {
+	            byteNumbers[i] = slice.charCodeAt(i);
+	        }
+
+	        var byteArray = new Uint8Array(byteNumbers);
+
+	        byteArrays.push(byteArray);
+	    }
+
+	    var blob = new Blob(byteArrays, {type: contentType});
+	    return blob;
+		}
+        ...
+		function _upload(files){
+  		if(channelReday){
+  			_.each(files,function(file){
+  				...
+					delivery.send(file);
+  			});
+  		}
+  	}
+  	...
+		function _initChatBoardView(){
+			socket = WebSocketService.getCurrentSocket();
+			...
+			delivery = new Delivery(socket);
+			...
+			delivery.on('receive.success',function(file){
+	          $scope.recievedFiles.push(file);
+	          ...	    
+	      });
+			...
+		}
+		...
+  	$scope.saveFile = function(msg,filename){
+  		var tempFile = _.find($scope.recievedFiles,function(file){
+				return file.name == filename;
+			});
+
+  		var fileBlob = b64toBlob(tempFile.data,tempFile.mimeType);
+  		saveAs(fileBlob, tempFile.name);
+  		...
+  	}
+  	...
+  });
+\end{lstlisting}
+
+
+\par Because Delivery.js sends files in base64\footnote{Base64 is a group of similar binary-to-text encoding schemes that represent binary data in an ASCII string format by translating it into a radix-64 representation. The term Base64 originates from a specific MIME content transfer encoding.\cite{wiki:base64}} encoding format, on the client application, it is necessary to convert base64 encoding string to Web \textit{Blob}\footnote{A Blob object represents a file-like object of immutable, raw data. Blobs represent data that isn't necessarily in a JavaScript-native format. The File interface is based on Blob, inheriting blob functionality and expanding it to support files on the user's system.\cite{mdn:blob}} data for using the \gls{html5} \gls{w3c} \textit{saveAs()} function at line 55 in Code Snippet \ref{code:chatboard_ctrl}. The \textit{saveAs()} function takes Web \textit{Blob} and file name as the two function parameters. The converting function is implemented at line 4 to line 26 as \textit{b64toBlob()} function in Code Snippet \ref{code:chatboard_ctrl}, it takes base64 string, content type of the file and slice size (in the prototype case it uses default 512 bit) to convert base64 string data to Web Blob data. The important function in this code block is \textit{atob()}, it decodes a string of data which has been encoded using base-64 encoding, then slice the byte character data into byte array since \textit{Blob()} function only takes array of data objects, shown at line 24.
 
