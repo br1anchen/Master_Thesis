@@ -1,50 +1,30 @@
 \appendix
 \addtocontents{toc}{%
-  \protect\vspace{1em}% 
+  \protect\vspace{1em}%
   \protect\noindent \bfseries \appendixtocname\protect\par
   \protect\vspace{-.5em}%
  }
  \renewcommand{\chaptername}{\appendixname}
- 
+
 \begin{appendices}
 
 \chapter{Appendix A}
 
-\chapter{Appendix B}
-
-\section{Socket.IO Implementation Script} 
+\section{Socket.IO Implementation Script}
 \label{server:socket}
 
 \begin{lstlisting}[caption={socket.js on Application Server},label={code:server_socket}]
 SocketManager.prototype.listen = function(server){
-  var self = this;
-  clients = {};
-  sipClients = {};
-  callRequests = {};
-  conversations = {};
-
+  ...
   io = socketio.listen(server);
-
   io.sockets.on('connection', _handlerSocket);
-
   _handlerSip();
 }
 
 function _handlerSocket(socket) {
   var delivery = dl.listen(socket);
-
-  // convenience function to log server messages on the client
-  function log(){
-    var array = [">>>"];
-    for (var i = 0; i < arguments.length; i++) {
-      array.push(arguments[i]);
-    }
-      socket.emit('log', array);
-  }
-
+    ...
   socket.on('sip',function (data){
-    log('Got sip message:', data);
-
     switch(data.type){
       case 'register':
         if(data.username != ""){
@@ -53,633 +33,32 @@ function _handlerSocket(socket) {
           });
         }
         break;
-      case 'invite':
-        var callerClient = clients[data.username];
-        var calleeClient = clients[data.content.to];
-
-        if(!callerClient.inConference){
-          xmsManager.createConference({
-            type: "audiovideo",
-            max_p: 9,
-            reserve: 0,
-            layout: 0,
-            caption: "yes"
-          },function(conf_id){
-            callerClient.conf_id = conf_id;
-            conversations[conf_id] = _createConversation(conf_id);
-
-            xmsManager.joinConference(callerClient.local_identifier,conf_id,{
-              caption: "webrtc: " + data.username,
-              region: 0,
-              audio: "sendrecv",
-              video: "sendrecv"
-            },function(connected){
-              console.log(data.username + ' joined conference : ' + connected);
-              callerClient.inConference = true;
-              conversations[conf_id].inboundContacts.push(data.username);
-              socket.join(conf_id.toString());
-            });
-
-            if(calleeClient){
-              callerClient.socket.emit('webrtc',{
-                type: "ringing",
-                number: calleeClient.number
-              });
-
-              calleeClient.callreq_id = callerClient.callreq_id;
-              callRequests[callerClient.callreq_id].callee = calleeClient;
-
-              calleeClient.socket.emit('webrtc',{
-                type: "createRTCoffer",
-                inComingNumber: data.username,
-                callDirection: 'inbound',
-                conf_id: conf_id
-              });
-            }else{
-              _inviteOutboundCall(data.username,data.content.to);
-            }   
-            
-          });
-
-        }else{
-          if(calleeClient){
-            callerClient.socket.emit('webrtc',{
-              type: "ringing",
-              number: calleeClient.number
-            });
-
-            calleeClient.callreq_id = callerClient.callreq_id;
-            callRequests[callerClient.callreq_id].callee = calleeClient;
-
-            calleeClient.socket.emit('webrtc',{
-              type: "createRTCoffer",
-              inComingNumber: data.username,
-              callDirection: 'inbound',
-              conf_id: callerClient.conf_id
-            });
-          }else{
-            _inviteOutboundCall(data.username,data.content.to);
-          }
-          
-        }
-        break;
-      case 'answerInvite':
-        var client = clients[data.username];
-        var req = callRequests[client.callreq_id];
-
-        if(!client.inConference){
-          xmsManager.createConference({
-            type: "audiovideo",
-            max_p: 9,
-            reserve: 0,
-            layout: 0,
-            caption: "yes"
-          },function(conf_id){
-            client.conf_id = conf_id;
-            conversations[conf_id] = _createConversation(conf_id);
-
-            xmsManager.joinConference(client.local_identifier,conf_id,{
-              caption: "webrtc: " + data.username,
-              region: 0,
-              audio: "sendrecv",
-              video: "sendrecv"
-            },function(connected){
-              console.log(data.username + ' joined conference : ' + connected);
-              client.inConference = true;
-              conversations[conf_id].inboundContacts.push(data.username);
-              socket.join(conf_id.toString());
-            });
-            
-            xmsManager.joinConference(req.caller.remote_identifier,conf_id,{
-              caption: "sip: " + unq(req.caller.number),
-              region: 0,
-              audio: "sendrecv",
-              video: "inactive"
-            },function(connected){
-              console.log(req.caller.number + ' joined conference : ' + connected);
-              req.caller.conf_id = conf_id;
-              conversations[conf_id].outboundContacts.push(req.caller.number);
-              callRequests[client.callreq_id].end = true;
-            });
-
-          });
-        }else{
-
-          xmsManager.joinConference(req.caller.remote_identifier,client.conf_id,{
-            caption: "sip: " + unq(req.caller.number),
-            region: 0,
-            audio: "sendrecv",
-            video: "inactive"
-          },function(connected){
-            console.log(req.caller.number + ' joined conference : ' + connected);
-            req.caller.conf_id = client.conf_id;
-            conversations[client.conf_id].outboundContacts.push(req.caller.number);
-            callRequests[client.callreq_id].end = true;
-          });
-
-        }
-        break;
-      default:
-        break;
+      ...
     }
   });
 
   socket.on('webrtc', function (data) {
-    log('Got webrtc message:', data);
-    
-    switch(data.type){
-      case 'answerInvite':
-        var client = clients[data.username];
-
-        xmsManager.joinConference(client.local_identifier,data.conf_id,{
-          caption: "webrtc: " + data.username,
-          region: 0,
-          audio: "sendrecv",
-          video: "sendrecv"
-        },function(connected){
-          console.log(data.username + ' joined conference : ' + connected);
-          client.inConference = true;
-          client.conf_id = data.conf_id;
-          conversations[data.conf_id].inboundContacts.push(data.username);
-          socket.join(data.conf_id.toString());
-          socket.broadcast.to(data.conf_id.toString()).emit('webrtc',{
-            type: 'join conference',
-            colleague: client.username,
-            conf_id: data.conf_id
-          });
-          callRequests[client.callreq_id].end = true;
-        });
-        break;
-      case 'answer':
-      /*
-        clients[data.username].role = 'callee';
-        var call = clients[data.username];
-        
-        if(call.endIceCandidate){
-          xmsManager.updateLocalSDP(data.content.sdp,call,function(){
-            
-            xmsManager.joinXMSCall(call,function(rs){
-              console.log("join call response: \n" + rs);
-
-              gw.sendAnswer(data.username,
-                call.sipInviteRequest,
-                call.remote_xmsSDP,
-                function(){
-                  console.log('200 ok answer sent');
-                });
-
-            });
-          });
-        }
-      */
-        break;
-      case 'offer':
-        var client = clients[data.username];
-
-        if(!data.content.self){
-          var id = uuid.v1();
-          client.callreq_id = id;
-
-          callRequests[id] = _createCallRequest(id);
-          callRequests[id].caller = client;
-          
-        }else{
-
-          /*
-          gw.sendAnswer(data.username,
-            clients[data.username].sipInviteRequest,
-            clients[data.username].remote_xmsSDP,
-            function(){
-              console.log('200 ok answer sent');
-          });
-          */
-        }
-        
-        if(client.inConference){
-          socket.emit('webrtc',{
-            type: "answer",
-            self: data.content.self
-          });
-        }
-        
-        break;
-      case 'register':
-        clients[data.username] = {};
-        _resetClient(data.username,data.host,socket,delivery);
-
-        socket.join(data.host);
-
-        var colleagues = _und.map(clients,function(client,key){
-          if(client.host == data.host && key != data.username){
-            return {
-              name: client.username,
-              number: client.number,
-              online: true
-            };
-          }
-        });
-
-        colleagues = _und.filter(colleagues,function(client){
-          return client != null;
-        });
-
-        socket.emit('webrtc',{
-          type: 'register',
-          msg: 'success',
-          colleagues: colleagues
-        });
-        
-        socket.broadcast.to(data.host).emit('webrtc', {
-          type: 'online',
-          user: {
-            name: data.username,
-            number: clients[data.username].number,
-            online: true
-          }
-        });
-
-        break;
-      case 'endCandidate':
-        var client = clients[data.username];
-        client.endIceCandidate = true;
-        
-        var role = callRequests[client.callreq_id].caller.number == data.username ? 'caller' : 'callee';
-
-        console.log('webrtc:endCandidate: ' + role + ' sdp: ' + data.content.sdp);
-
-        if(client.local_xmsSDP == '' || client.local_identifier == ''){
-            xmsManager.createXMSCall({
-            callType: 'webrtc',
-            sdp: data.content.sdp
-          },function(xmsSdp,id){
-            client.local_xmsSDP = xmsSdp;
-            client.local_identifier = id;
-
-            socket.emit('webrtc',{
-              type: "answer",
-              sdp: xmsSdp,
-              self: data.content.self
-            });
-          });
-        }else{
-          xmsManager.updateLocalSDP(data.content.sdp,client,function(sdp){
-            client.local_xmsSDP = sdp;
-            socket.emit('webrtc',{
-              type: "answer",
-              sdp: sdp,
-              self: data.content.self
-            });
-          });
-        }
-
-        break;
-      case 'candidate':
-        
-        break;
-      case 'hangup':
-        
-        try{
-          var client = clients[data.username];
-          var numberClient = clients[data.pairNumber] ? clients[data.pairNumber] : sipClients[data.pairNumber];
-
-          if(!numberClient){
-
-            gw.sendCancel(data.username,data.pairNumber,function(){
-              console.log(data.username + 'cancel the call');
-
-              callRequests[client.call_req].end = true;
-
-            });
-
-            var conf = conversations[client.conf_id];
-
-            if(!client.inConference || conf.inboundContacts + conf.outboundContacts <= 1){
-
-              xmsManager.deleteXMSCall(client.local_identifier,function(rs){
-                if(rs.statusCode === 204){
-                  console.log('hangup: ' + client.username);
-                  client.socket.emit('webrtc',{ type: 'bye'});
-                  
-                  _resetClient(client.username,client.host,client.socket,client.delivery);
-                  
-                }
-              });
-
-            }
-
-          }else{
-
-            if(numberClient.type === 'webrtc' && data.status === 'on'){
-              var conf = conversations[client.conf_id];
-              var i = conf.inboundContacts.indexOf(client.username);
-              if(i != -1) {
-                conf.inboundContacts.splice(i, 1);
-              }
-              //conf.inboundContacts.pop(client.username);
-
-              xmsManager.deleteXMSCall(client.local_identifier,function(rs){
-                if(rs.statusCode === 204){
-                  console.log('hangup: ' + client.username);
-                  client.socket.emit('webrtc',{ type: 'bye'});
-
-                  try{
-                    if(conf.inboundContacts.length + conf.outboundContacts.length > 1){
-                      socket.broadcast.to(client.conf_id).emit('webrtc',{
-                        type: 'forward',
-                        number: client.number,
-                        newNumber: conf.outboundContacts.length != 0 ? conf.outboundContacts[0] : conf.inboundContacts[0],
-                        webrtcOnly: conf.outboundContacts.length == 0 ? true : false
-                      });
-                    }
-                  }catch(e){
-                    console.log('RUNTIME ERROR:webrtc:hangup:forward: ', e);
-                  }
-                  
-                  _resetClient(client.username,client.host,client.socket,client.delivery);
-                  
-                }
-              });
-
-              if(conf.outboundContacts.length == 0 && conf.inboundContacts.length == 1){
-                xmsManager.deleteXMSCall(numberClient.local_identifier,function(rs){
-                  if(rs.statusCode === 204){
-                    console.log('hangup to delete: ' + numberClient.username);
-                    numberClient.socket.emit('webrtc',{ 
-                      type: 'bye',
-                      number: client.number
-                    });
-                    _resetClient(numberClient.username,numberClient.host,numberClient.socket,numberClient.delivery);
-                    var i = conf.inboundContacts.indexOf(numberClient.username);
-                    if(i != -1) {
-                      conf.inboundContacts.splice(i, 1);
-                    }
-                    //conf.inboundContacts.pop(numberClient.username);
-                    xmsManager.deleteXMSConference(conf.id,function(rs){
-                      if(rs.statusCode === 204){
-                        console.log('webrtc:hangup:conference resource: ' + conf.id + ' delete success.');
-                        delete conf;
-                      }
-                    });
-                  }
-                });
-              }else if(conf.outboundContacts.length == 1 && conf.inboundContacts.length == 0){
-                var sipNo = conf.outboundContacts[0];
-                var sipClient = sipClients[sipNo];
-
-                xmsManager.deleteXMSCall(sipClient.remote_identifier,function(rs){
-                  if(rs.statusCode === 204){
-                    var i = conf.outboundContacts.indexOf(sipClient.number);
-                    if(i != -1) {
-                      conf.outboundContacts.splice(i, 1);
-                    }
-                    //conf.outboundContacts.pop(sipClient.number);
-
-                    var call_req = _und.find(callRequests,function(q){//TODO: first one match bug
-                      if(q.caller.type == 'webrtc'){
-                        return q.callee.number == sipClient.number;
-                      }else{
-                        return q.caller.number == sipClient.number;
-                      }
-                    });
-
-                    var pair = call_req.caller.type == 'webrtc' ? call_req.caller : call_req.callee;
-
-                    gw.sendBye(pair.username,function(){
-                      console.log('bye to number: ' + sipClient.number);
-                    });
-
-                    xmsManager.deleteXMSConference(conf.id,function(rs){
-                      if(rs.statusCode === 204){
-                        console.log('webrtc:hangup:conference resource: ' + conf.id + ' delete success.');
-                        delete conf;
-                      }
-                    });
-                  }
-                });
-              }
-
-            }else if(numberClient.type === 'webrtc' && data.status === 'off'){
-              console.log('busy: ' + client.username);
-
-              var conf = conversations[numberClient.conf_id];
-
-              numberClient.socket.emit('webrtc',{ 
-                type: 'busy',
-                source: client.username
-              });
-
-              if(conf.outboundContacts.length == 0 && conf.inboundContacts.length == 1){
-                xmsManager.deleteXMSCall(numberClient.local_identifier,function(rs){
-                  if(rs.statusCode === 204){
-                    console.log('busy to delete: ' + numberClient.username);
-                    numberClient.socket.emit('webrtc',{ type: 'bye'});
-                    _resetClient(numberClient.username,numberClient.host,numberClient.socket,numberClient.delivery);
-                    var i = conf.inboundContacts.indexOf(numberClient.username);
-                    if(i != -1) {
-                      conf.inboundContacts.splice(i, 1);
-                    }
-                    //conf.inboundContacts.pop(numberClient.username);
-
-                    xmsManager.deleteXMSConference(conf.id,function(rs){
-                      if(rs.statusCode === 204){
-                        console.log('webrtc:hangup:conference resource: ' + conf.id + ' delete success.');
-                        delete conf;
-                      }
-                    });
-                  }
-                });
-              }
-
-            }else if(numberClient.type === 'sip' && data.status === 'on'){
-              var conf = conversations[client.conf_id];
-              var i = conf.inboundContacts.indexOf(client.username);
-              if(i != -1) {
-                conf.inboundContacts.splice(i, 1);
-              }
-              //conf.inboundContacts.pop(client.username);
-
-              xmsManager.deleteXMSCall(client.local_identifier,function(rs){
-                if(rs.statusCode === 204){
-                  console.log('hangup: ' + client.username);
-                  client.socket.emit('webrtc',{ type: 'bye'});
-
-                  if(conf.inboundContacts.length + conf.outboundContacts.length > 1){
-                    socket.broadcast.to(client.conf_id).emit('webrtc',{
-                      type: 'forward',
-                      number: client.number,
-                      newNumber: conf.outboundContacts.length != 0 ? conf.outboundContacts[0] : conf.inboundContacts[0],
-                      webrtcOnly: conf.outboundContacts.length == 0 ? true : false
-                    });
-                  }
-
-                  if(conf.inboundContacts.length == 0){
-                    xmsManager.deleteXMSCall(numberClient.remote_identifier,function(rs){
-                      if(rs.statusCode === 204){
-                        var i = conf.outboundContacts.indexOf(numberClient.number);
-                        if(i != -1) {
-                          conf.outboundContacts.splice(i, 1);
-                        }
-                        //conf.outboundContacts.pop(numberClient.number);
-
-                        var call_req = _und.find(callRequests,function(q){//TODO: first one match bug
-                          if(q.caller.type == 'webrtc'){
-                            return q.callee.number == numberClient.number;
-                          }else{
-                            return q.caller.number == numberClient.number;
-                          }
-                        });
-
-                        var pair = call_req.caller.type == 'webrtc' ? call_req.caller : call_req.callee;
-
-                        gw.sendBye(pair.username,function(){
-                          console.log('bye to number: ' + numberClient.number);
-                        });
-
-                        xmsManager.deleteXMSConference(conf.id,function(rs){
-                          if(rs.statusCode === 204){
-                            console.log('sip:hangup:conference resource: ' + conf.id + ' delete success.');
-                            delete conf;
-                          }
-                        });
-
-                      }
-                      
-                    });
-                  }
-
-                  _resetClient(client.username,client.host,client.socket,client.delivery);
-
-                }
-              });
-
-            }else if(numberClient.type === 'sip' && data.status === 'off'){
-
-              gw.sendBye(client.username,function(){
-                console.log('bye to number: ' + numberClient.number);
-              });
-
-            }
-
-          }
-
-        }catch(e){
-          console.log('RUNTIME ERROR:sip:hangup: ', e);
-        }
-
-        break;
-      default:
-        
-        break;
-    }
-  });
+        ...  
+    });
 
   socket.on('message',function(data){
-
-    log('Got text message:', data);
-
-    var client = clients[data.source];
-
-    try{
-
-      if(client.conf_id && data.type === 'IM'){
-        socket.broadcast.to(client.conf_id.toString()).emit('message',data);
-
-        var conference = conversations[client.conf_id];
-        if(conference.outboundContacts.length != 0){
-          _und.each(conference.outboundContacts,function(sipNumber,key){
-            data.toNumber = sipNumber;
-            _sendSMS(data,function(result){
-              client.socket.emit('message',{
-                type: 'IM Report',
-                status: result,
-                content: data.content,
-                toNumber: sipNumber
-              });
-            });
-          });
-        }
-
-      }else if(data.type === 'SMS'){
-        _sendSMS(data,function(result){
-          client.socket.emit('message',{
-            type: 'SMS Report',
-            status: result,
-            content: data.content,
-            toNumber: data.toNumber,
-            comment: data.comment
-          });
-        });
-      }
-
-    }catch(e){
-      console.log('RUNTIME ERROR:message: ', e);
-    }
-
+    ...
   });
 
   socket.on('disconnect', function() {
-
-    var lostClient = _und.find(clients,function(client,key){
-      return client.socket.id == socket.id;
-    });
-
-    if(lostClient){
-
-      var conf = lostClient.conf_id ? conversations[lostClient.conf_id] : undefined;
-      if(conf){
-        var i = conf.inboundContacts.indexOf(lostClient.username);
-        if(i != -1) {
-          conf.inboundContacts.splice(i, 1);
-        }
-        //conf.inboundContacts.pop(lostClient.username);
-      }
-
-      if(lostClient.local_identifier){
-        xmsManager.deleteXMSCall(lostClient.local_identifier,function(rs){
-          if(rs.statusCode === 204){
-            console.log('disconnect: ' + lostClient.username);
-          }
-        });
-      }
-
-      delete clients[lostClient.username];
-
-      socket.broadcast.to(lostClient.host).emit('webrtc',{
-        type: 'disconnect',
-        user: {
-          name: lostClient.username,
-          number: lostClient.number,
-          online: false
-        }
-      });
-
-      gw.unregister(lostClient.username);
-    }
-
+    ...
   });
 
   delivery.on('receive.success',function(file){
-
-    var sendingClient = _und.find(clients,function(client,key){
-      return client.socket.id == socket.id;
-    });
-
+    ...
     fs.writeFile(file.name,file.buffer, function(err){
       if(err){
         console.log('File could not be saved.');
       }else{
         console.log('File saved.');
         _und.each(clients,function(client,key){
-          //if(client.conf_id == sendingClient.conf_id && client.username != sendingClient.username){
           if(sendingClient.conf_id && client.conf_id == sendingClient.conf_id && client.username != sendingClient.username){
-
-            client.socket.emit('message',{
-              content: 'Sharing file: ' + file.name + ' ...',
-              source: sendingClient.username,
-              number: sendingClient.number,
-              action: false
-            });
-
+            ...
             client.delivery.send({
               name: file.name,
               path : './' + file.name
@@ -696,7 +75,7 @@ function _handlerSocket(socket) {
 }
 \end{lstlisting}
 
-\section{SIP Implementation Script} 
+\section{SIP Implementation Script}
 \label{server:sip}
 
 \begin{lstlisting}[caption={sip.js on Application Server},label={code:sipjs}]
@@ -727,7 +106,7 @@ function createRegister(user){
 	return {
 	  method: 'REGISTER',
 	  uri: 'sip:' + user.hostname,
-	  headers: 
+	  headers:
 	  {
 	  	'call-id': user.callid,
 	  	cseq: {method: 'REGISTER', seq: ++user.seq},
@@ -795,7 +174,7 @@ function createInviteACK(rs,client,sdp){
 
 function createAnswerOK(rq,client,sdp){
 	var rs = sip.makeResponse(rq, 200, 'OK');
-	
+
 	rs.headers.to.params.tag = client.tag;
 
 	rs.headers.contact = [{
@@ -825,7 +204,7 @@ function createBye(client){
 	return {
 	  method: 'BYE',
 	  uri: 'sip:' + client.hostname + ':5060',
-	  headers: 
+	  headers:
 	  {
 	  	'call-id': client.callid,
 	  	cseq: {method: 'BYE', seq: 3},
@@ -847,7 +226,7 @@ function createCancel (client,to) {
 	return {
 	  method: 'CANCEL',
 	  uri: 'sip:' + to + '@' + client.hostname,
-	  headers: 
+	  headers:
 	  {
 	  	'call-id': client.callid,
 	  	cseq: {method: 'CANCEL', seq: 2},
@@ -907,7 +286,7 @@ SipGateway.prototype.init = function () {
 
 	sip.start({
 		port: hostPort,
-	  logger: { 
+	  logger: {
 	    send: function(message, address) { util.debug("send\n" + util.inspect(message, false, null)); },
 	    recv: function(message, address) { util.debug("recv\n" + util.inspect(message, false, null)); }
 	  },
@@ -915,15 +294,15 @@ SipGateway.prototype.init = function () {
 	  tcp: false
 	},
 	function(rq) {
-		
+
 	  try {
-	    if(rq.method === 'REGISTER') {  
+	    if(rq.method === 'REGISTER') {
 	      util.debug('request register');
 	      //looking up user info
 	      var username = sip.parseUri(rq.headers.to.uri).user;
-	      
+
 	      registry[username] = rq.headers.contact;
-	      
+
 	      //var rs = sip.makeResponse(rq, 200, 'Ok');
 	      //rs.headers.contact = rq.headers.contact;
 	      //sip.send(rs);
@@ -932,7 +311,7 @@ SipGateway.prototype.init = function () {
 
 	      var username = sip.parseUri(rq.uri).user;
 	      var contact = registry[username];
-	      
+
 	      var rs = sip.makeResponse(rq, 100, 'Trying');
 	      sip.send(rs);
 
@@ -950,7 +329,7 @@ SipGateway.prototype.init = function () {
 	        		inviteRequest: rq
 	        	}
 	        });
-	        
+
 	        rs = sip.makeResponse(rq, 180, 'Ringing');
 					sip.send(rs);
 	      }
@@ -975,7 +354,7 @@ SipGateway.prototype.init = function () {
 	    }
 	    else if(rq.method === 'ACK'){
 	    	util.debug("sip ACK: \n" + util.inspect(rq, false, null));
-				
+
 				var username = sip.parseUri(rq.uri).user;
 	    	registry[username].answerAcked = true;
 	    }
@@ -1002,10 +381,10 @@ SipGateway.prototype.init = function () {
 
 	    sip.send(sip.makeResponse(rq, 500, "Server Internal Error"));
 	  }
-	  
+
 	});
 
-	
+
 }
 
 function _register(client,callback){
@@ -1026,7 +405,7 @@ function _register(client,callback){
 	    digest.signRequest(creds, rq, rs, creds);
 			sip.send(rq,function(rs){
 				if(rs.status === 200){
-					
+
 					client.authorization = rq.headers.authorization;
 
 					if(!client.registerTimer){
@@ -1050,7 +429,7 @@ function _register(client,callback){
 				callback({type: 'register',msg: 'success'});
 			}
 		}
-		
+
 	});
 
 }
@@ -1073,7 +452,7 @@ SipGateway.prototype.register = function(client,callback){
 SipGateway.prototype.unregister = function(username){
 
 	clearInterval(registry[username].registerTimer);
-	
+
 }
 
 SipGateway.prototype.invite = function(from,to,callback){
@@ -1160,7 +539,7 @@ SipGateway.prototype.invite = function(from,to,callback){
 SipGateway.prototype.ackInvite = function(from,rs,xmsSDP,callback){
 	var client = registry[from];
 	var ack = createInviteACK(rs,client,xmsSDP);
-	
+
 	util.debug("ack message: \n" + util.inspect(ack, false, null));
 
 	client.from = ack.headers.from;
@@ -1181,7 +560,7 @@ SipGateway.prototype.sendRing = function(to,rq){
 	var client = registry[to];
 
 	var rs = sip.makeResponse(rq, 180, 'Ringing');
-	
+
 	rs.headers.to.params.tag = registry[to].tag;
 
 	sip.send(rs);
@@ -1234,7 +613,7 @@ SipGateway.prototype.sendCancel = function(from,to,callback){
 SipGateway.prototype.sendBusy = function(rq,callback){
 
 	var busy = sip.makeResponse(rq, 486, 'Busy');
-	
+
 	sip.send(busy,function(rs){
 		if(rs.status === 200){
 			callback();
@@ -1260,7 +639,7 @@ module.exports.SipGateway = SipGateway;
 \end{lstlisting}
 
 
-\section{XMS Implementation Script} 
+\section{XMS Implementation Script}
 \label{server:xms}
 
 \begin{lstlisting}[caption={xms.js on Application Server},label={code:xms}]
@@ -1290,7 +669,7 @@ XmsManager.prototype.createXMSCall = function(data,callback){
     console.log('createXMSCall:STATUS: ' + res.statusCode);
     console.log('createXMSCall:HEADERS: ' + JSON.stringify(res.headers));
     res.setEncoding('utf8');
-    
+
     res.on('data', function (chunk) {
       resData += chunk;
     }).on('end', function() {
@@ -1339,7 +718,7 @@ XmsManager.prototype.joinXMSCall = function(call,callback){
     console.log('joinXMSCall:STATUS: ' + res.statusCode);
     console.log('joinXMSCall:HEADERS: ' + JSON.stringify(res.headers));
     res.setEncoding('utf8');
-    
+
     res.on('data', function (chunk) {
       resData += chunk;
     }).on('end', function() {
@@ -1350,12 +729,12 @@ XmsManager.prototype.joinXMSCall = function(call,callback){
   });
 
   req.write(requestContent);
-  req.end();  
+  req.end();
 }
 
 XmsManager.prototype.updateLocalSDP = function(newSDP,call,callback){
   var requestContent = "<web_service version=\"1.0\">";
-  requestContent += "\n<call" + " sdp=\"" 
+  requestContent += "\n<call" + " sdp=\""
     + newSDP.replace(/\r\n/g, "&#xA;") + "\"";
   requestContent += " encryption=\"dtls\"" + " ice=\"yes\"";
   requestContent += " media=\"audiovideo\"" + " signaling= \"no\"/>";
@@ -1379,14 +758,14 @@ XmsManager.prototype.updateLocalSDP = function(newSDP,call,callback){
     console.log('updateLocalSDP:STATUS: ' + res.statusCode);
     console.log('updateLocalSDP:HEADERS: ' + JSON.stringify(res.headers));
     res.setEncoding('utf8');
-    
+
     res.on('data', function (chunk) {
       resData += chunk;
     }).on('end', function() {
       if(resData != ''){
         xmlparser.parseString(resData,function(err,result){
           var xmsSdp = result['web_service']['call_response'][0]['$'].sdp;
-          
+
           //console.log('after update sdp: ' + xmsSdp);
           if(xmsSdp){
             xmsSdp = xmsSdp.replace(xmsAddress,xmsPublicAddress);
@@ -1394,27 +773,27 @@ XmsManager.prototype.updateLocalSDP = function(newSDP,call,callback){
           }else{
             callback(null);
           }
-          
+
         });
       }
     });
   });
 
   req.write(requestContent);
-  req.end();    
+  req.end();
 }
 
 XmsManager.prototype.createConference = function(options,callback){
-  var requestContent = "<web_service version=\"1.0\">"; 
+  var requestContent = "<web_service version=\"1.0\">";
   requestContent += "\n<conference type=\"" + options.type + "\" max_parties=\"" + options.max_p + "\" reserve=\"" + options.reserve + "\"";
   requestContent += " layout=\"" + options.layout + "\" caption=\"" + options.caption + "\"";
   requestContent += " caption_duration=\"30s\" beep=\"yes\" clamp_dtmf=\"yes\" auto_gain_control=\"yes\" echo_cancellation=\"yes\" />";
-  requestContent += "\n</web_service>" 
+  requestContent += "\n</web_service>"
 
   //console.log("createConference: " + requestContent);
   var createConfPath = xmsPath + '/conferences?appid=' + xmsAppId;
   //console.log("createConference path: " + createConfPath);
-  
+
   var req = http.request({
     host: xmsAddress,
     port: xmsPort,
@@ -1430,16 +809,16 @@ XmsManager.prototype.createConference = function(options,callback){
     console.log('createConference:STATUS: ' + res.statusCode);
     console.log('createConference:HEADERS: ' + JSON.stringify(res.headers));
     res.setEncoding('utf8');
-    
+
     res.on('data', function (chunk) {
       resData += chunk;
     }).on('end', function() {
       if(resData != ''){
         xmlparser.parseString(resData,function(err,result){
           var conf_id = result['web_service']['conference_response'][0]['$'].identifier;
-          
+
           callback(conf_id);
-          
+
         });
       }
     });
@@ -1477,14 +856,14 @@ XmsManager.prototype.joinConference = function(call_id,conf_id,options,callback)
     console.log('joinConference:STATUS: ' + res.statusCode);
     console.log('joinConference:HEADERS: ' + JSON.stringify(res.headers));
     res.setEncoding('utf8');
-    
+
     res.on('data', function (chunk) {
       resData += chunk;
     }).on('end', function() {
       if(resData != '' && res.statusCode === 200){
-          
+
         callback('yes');
-          
+
       }
     });
   });
@@ -1536,12 +915,12 @@ XmsManager.prototype.deleteXMSConference = function(confId,callback){
 module.exports.XmsManager = XmsManager;
 \end{lstlisting}
 
-\section{MSG Implementation Script} 
+\section{MSG Implementation Script}
 \label{server:msg}
 
 \begin{lstlisting}[caption={msg.js on Application Server},label={code:msg}]
 MsgManager.prototype.login = function(loginDto,success,fail){
-	
+
 	var loginStr = JSON.stringify(loginDto);
 
 	var options = {
@@ -1640,7 +1019,7 @@ module.exports.MsgManager = MsgManager;
 
 \chapter{Appendix C}
 
-\section{WebRTC in Dart} 
+\section{WebRTC in Dart}
 \label{research:dart_webrtcctrl}
 
 \begin{lstlisting}[caption={WebRTCCtrl in Dart application client},label={code:dart_webrtcctrl}]
@@ -1694,7 +1073,7 @@ class WebRTCCtrl {
 
 \chapter{Appendix D}
 
-\section{AngularJs Files Structure} 
+\section{AngularJs Files Structure}
 \label{code:angularjs_structure}
 
 \begin{figure}
