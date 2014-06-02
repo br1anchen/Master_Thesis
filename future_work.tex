@@ -5,7 +5,19 @@
 
 \section{RTCDataChannel usage}
 
-\par Because the XMS media server handles all the media stream exchange between the end point clients and it is not support \textit{RTCDataChannel}, the prototype application does not implement \textit{RTCDataChannel} usage in the system. Current using Delivery.js library is good at bidirectional file sharing between clients and server through WebSocket. But is has some disadvantages still. The most apparent disadvantage would be the fact that it bypasses traditional caching methods. Instead of caching based on a file’s URL, caching would be based on the content of the Web Socket’s message. One possibility would be to cache a base64, or text, version of the file within Redis\footnote{Redis is an open-source, networked, in-memory, key-value data store with optional durability. It is written in ANSI C.\cite{wiki:redis}} for fast, in memory, access. And also the sharing files are uploaded to the server then push back to the other clients, it takes longer time to finish this process than peer to peer sharing files. And also in current prototype system, the shared files will be temporary pre-stored for the client, it will cause some problem when the sharing file is very big in size and it will take over all the memory resource the client has.
+\par The \textit{RTCDataChannel} \gls{api} enables peer-to-peer exchange of arbitrary data, with low latency and high throughput.The API has several features to make the most of \textit{RTCPeerConnection} and enable powerful and flexible peer-to-peer communication\cite{html5rock:webrtc}:
+
+\begin{itemize}[topsep=-1em,parsep=0em,itemsep=0em]
+    \item Leveraging of RTCPeerConnection session setup.
+    \item Multiple simultaneous channels, with prioritization.
+    \item Reliable and unreliable delivery semantics.
+    \item Built-in security (\gls{dtls}) and congestion control.
+    \item Ability to use with or without audio or video.
+\end{itemize}
+
+\par Communication occurs directly between browsers, so RTCDataChannel can be much faster than WebSocket even if a relay (\gls{turn}) server is required when 'hole punching' to cope with firewalls and \gls{nat}s fails.
+
+\par Because the XMS media server handles all the media stream exchange between the end point clients and it is not support \textit{RTCDataChannel}, the prototype application does not implement \textit{RTCDataChannel} usage in the system. Current using Delivery.js library is good at bidirectional file sharing between clients and server through WebSocket. But is has some disadvantages still. The most apparent disadvantage would be the fact that it bypasses traditional caching methods. Instead of caching based on a file’s URL, caching would be based on the content of the Web Socket’s message. One possibility would be to cache a base64, or text, version of the file within Redis\footnote{Redis is an open-source, networked, in-memory, key-value data store with optional durability. It is written in ANSI C.\cite{wiki:redis}} for fast, in memory, access. And also the sharing files are uploaded to the server then push back to the other clients, it takes longer time to finish this process than peer to peer sharing files. Moreover, in current prototype system, the shared files will be temporary pre-stored for the client, it will cause some problem when the sharing file is very big size and it will take over all the memory resource which the client has.
 
 \par One obvious solution will be implementing the \textit{RTCDataChannel} \gls{api} on each connected client and create new \textit{RTCPeerConnection} for each pair user in mesh network for only sharing files purpose. Since these new \textit{RTCPeerConnection}
 is not necessary active during the whole time of application using, they are possible to remove after it is used for sharing files to release more memory recourse for browser clients.
