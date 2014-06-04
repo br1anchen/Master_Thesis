@@ -5,7 +5,7 @@
 
 \section{WebRTC Usage Cases}
 
-\noindent In May 2011, Google released an open source project for browser-based real-time communication known as \gls{webrtc}. This has been followed by ongoing work to standardize the relevant protocols in the \gls{ietf} and browser \gls{api}s in the \gls{w3c}. Then more and more web applications start using it in different ways. \gls{webrtc} \gls{api}s includes three important \gls{api}s, shown below. There are mainly two types of the \gls{webrtc} applications used them in separately or cooperatively way.
+\noindent After Google released the \gls{webrtc} as open source project. There are more and more web applications using it in different ways. \gls{webrtc} \gls{api}s includes three important \gls{api}s, shown below. There are mainly two types of the \gls{webrtc} applications used them in separately or cooperatively way.
 
 \begin{itemize}[topsep=-1em,parsep=0em,itemsep=0em]
  \item \textbf{RTCPeerConnection:} audio or video calling, with facilities for encryption and bandwidth management.
@@ -25,14 +25,14 @@
 
 \par UberConference gives a visual interface to every conference call so callers can know who's on a call and who's speaking at any time, in addition to making many other features, such as Hangouts\footnote{Google Hangouts is an instant messaging and video chat platform developed by Google, which launched on May 15, 2013 during the keynote of its I/O development conference.\cite{wiki:hangouts}} integration and screen sharing, easy-to-use with the click of a button. It is built by the teams that brought Google Voice\footnote{Google Voice (formerly GrandCentral) is a telecommunications service by Google launched on March 11, 2009.\cite{wiki:googleVoice}} and Yahoo! Voice to tens of millions of users, UberConference launched in 2012 and is funded by Andreessen Horowitz and Google Ventures.\cite{web:uberconference}
 
+\par The prototype system in this thesis ideally is to provide same rich media communication platform as the service provided by UberConference. In February of 2014, UberConference release the new feature which allow user to call into a Google Hangouts session with their mobile phone. The feature is shown in Figure \ref{fig:uberconference}, Once you have installed the UberConference app in Hangouts, people can join your call via phone with the help of a dedicated number. The prototype system will provide the same real-time communication service, but it allows the user to create a video conference based on \gls{webrtc} on browser by their mobile phone number and communicate with audio only mobile phone user as well. 
 \begin{wrapfigure}{r}{0.6\textwidth}
 	\centering
     	\includegraphics[width=0.58\textwidth,natwidth=610,natheight=642]{figs/uberconference_hangout.jpg}
   	\caption{UberConference integrate with Hangouts Screen shot\cite{tnw:uberconference}}
   	\label{fig:uberconference}
 \end{wrapfigure}
-
-\par The prototype system in this thesis ideally is to provide same rich media communication platform as the service provided by UberConference. In February of 2014, UberConference release the new feature which allow user to call into a Google Hangouts session with their mobile phone. The feature is shown in Figure \ref{fig:uberconference}, Once you have installed the UberConference app in Hangouts, people can join your call via phone with the help of a dedicated number. The prototype system will provide the same real-time communication service, but it allows the user to create a video conference based on \gls{webrtc} on browser by their mobile phone number and communicate with audio only mobile phone user as well. It will be more easier for user since they just need to remember their user credential related to their mobile phone number in order to use the prototype application rather than register another service user binding with private telephone number. And also it is more like usual telephone using because user call contacts based on their telephone number on the contact list. During the real-time conversation, the prototype application will provide user cooperation tools like instance message and file sharing in this development phase.
+It will be more easier for user since they just need to remember their user credential related to their mobile phone number in order to use the prototype application rather than register another service user binding with private telephone number. And also it is more like usual telephone using because user call contacts based on their telephone number on the contact list. During the real-time conversation, the prototype application will provide user cooperation tools like instance message and file sharing in this development phase.
 
 \subsection{Cube Slam}
 
