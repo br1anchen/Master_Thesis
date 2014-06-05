@@ -3,6 +3,47 @@
 
 \noindent In this chapter, it will cover implementation progress of the prototype system along with explanation and analysis. The prototype system is implemented based on solution research from chapter \ref{chp:sys_design}.
 
+\section{Prototype Functions}
+
+\noindent Based on the study from previous chapter, there are some real time features are implemented in the prototype system, they are shown in the Table \ref{tab:functions}. The final version of prototype application is shown in Figure \ref{fig:webgui_call_outgoing}, it is the main page of the web application client. The green notification message on the left shows that there is an outgoing call from the client to the 'Brian Chen' contact.
+
+\begin{figure}
+	\centering
+    	\includegraphics[width=0.90\textwidth,natwidth=610,natheight=642]{figs/webgui_call_outgoing.png}
+  	\caption{Prototype Application Calling Outbound Mobile Number}
+  	\label{fig:webgui_call_outgoing}
+\end{figure}
+
+\begin{table}
+\caption{\label{tab:functions}: Prototype System Functions}
+\centering
+\begin{tabular}{| c | p{3cm} | p{5.5cm} |}
+\hline
+No & Function & Detail \\ \hline
+\#1 & Single Call & Web browser client application can call outbound \gls{sip} client and receive outbound \gls{sip} client calling \\ \hline
+\#2 & Multiple Users Video Conference & Multiple Web browser clients can have video conference \\ \hline
+\#3 & Multiple Clients Conference & Multiple web browser client and single \gls{sip} client conference session \\ \hline
+\#4 & Forward Call & When one of two web browser clients leaves the current three end points(2 \gls{webrtc} clients and 1 \gls{sip} client) conference, this \gls{sip} phone call will be forwarded to the only \gls{webrtc} client in the current conference session \\ \hline
+\#5 & Instance Message & Instance Message chatting board in the current conference session \\ \hline
+\#6 & Instance Message to \gls{sms} & \gls{sms} messages will be sent to \gls{sip} client phone which is in the current video conference session \\ \hline
+\#7 & Files Sharing & Files can be shared in the current video conference session with the \gls{webrtc} client in the conference \\ \hline
+\#8 & Google Contacts Import & User can import their Google Contacts to the application clients for synchronize contacts list \\ \hline
+\#9 & Web Notification & All the necessary application notification will be display through the browser web notification message \\
+\hline
+\end{tabular} 
+\end{table}
+
+\par In the prototype system function Table \ref{tab:functions}, functions \#1 to \#4 is the basic telephony functions, they are implemented by \gls{webrtc} \gls{api}, application server and XMS media server. The detail about them will be covered in \gls{webrtc} \gls{api}s Implementation section, \gls{sip} Implementation section and XMS Media Server section since they are the real time communication function for \gls{webrtc} and \gls{sip} clients.
+
+\par Function \#5 is implemented by Socket.IO framework which is discussed in previous chapter. The implementation detail will be covered in Socket.IO Implementation section.
+Function \#6 is the advanced function along with the function \#5, it is implemented in \gls{msg} which will be discussed in \gls{sms} Messaging section in the later chapter.
+
+\par Function \#7 is implemented by Delivery.js framework not the original \gls{webrtc} \textit{RTCDataChannel}, more detail will be discussed in Files Sharing section.
+
+\par Function \#8 is another advanced feature provided by prototype application, it is implemented by Google Contacts \gls{api} which will be covered in AngularJs Framework Implementation section as the sample code section for AngularJs framework.
+
+\par Function \#9 is to make the web application more user friendly and more like traditional telephone usage scenario. It will not be covered in this thesis since the user experience is not the top priority object for this thesis.
+
 \section{WebRTC APIs Implementation}
 
 \noindent \gls{webrtc} components are accessed with JavaScript \gls{api}s. Currently in development are the Network Stream \gls{api}, which represents an audio or video data stream, and the PeerConnection \gls{api}, which allows two or more users to communicate browser-to-browser. Also under development is a DataChannel \gls{api} which enables communication of other types of data for real-time gaming, text chat, file transfer, and so forth. Because the media server used in prototype system is not support for DataChannel yet, the DataChannel \gls{api} will not be covered in this section. \textit{RTCDataChannel} \gls{api} will be discussed in chapter \ref{chp:future_work}.
@@ -192,7 +233,7 @@ a=candidate:2 2 UDP 2130706430 10.254.9.135 57345 typ host
 
 \par Once the \textit{RTCPeerConnection} is established, the client need configure where the media or data to store and display if it is necessary. In the prototype application of this thesis, media stream will be displayed in a \gls{html5} tag called \textit{<video>}. It will only be shown when there is media stream in \textit{<video>} tag source.
 
-\section{AngularJs framework Implementation}
+\section{AngularJs Framework Implementation}
 
 \noindent As it described about AngularJs in Chapter \ref{chp:pre_study}, there are three layer components in the framework, view, controller and service. The files structure is shown in Appendix \ref{code:angularjs_structure}. Application has two main web pages, \textit{login} page and \textit{phone} page. There are \textit{chatboard},\textit{contacts list}, \textit{contacts table}, \textit{dialpanel} and \textit{notification} user interface component blocks in \textit{phone} page. For each part of the application blocks, it has controller script and service script. Controller and service scripts are working with the \gls{html} view scripts. In this section, there will be one sample component block of the prototype application client explained in order to understand how the AngularJs is used in prototype application.
 
@@ -402,10 +443,6 @@ angular.module('webrtcDemo.services').
 
 \noindent In the prototype system, web application client and application server communicate with each other over WebSocket shown in Figure \ref{fig:system_network}. There are two main intentions to have the signaling channel over WebSocket. One is for signaling of \gls{webrtc} \gls{ice} candidate exchange and the other one is to exchange the communication data (text message, files). Unlike \gls{http}, WebSocket provides full-duplex communication. Additionally, Websocket enables streams of messages on top of \gls{tcp}. \gls{tcp} alone deals with streams of bytes with no inherent concept of a message. Before WebSocket, port 80 full-duplex communication was attainable using Comet\footnote{Comet is a web application model in which a long-held HTTP request allows a web server to push data to a browser, without the browser explicitly requesting it.Comet is an umbrella term, encompassing multiple techniques for achieving this interaction. All these methods rely on features included by default in browsers, such as JavaScript, rather than on non-default plugins. The Comet approach differs from the original model of the web, in which a browser requests a complete web page at a time.\cite{wiki:comet}} channels; however, Comet implementation is nontrivial, and due to the \gls{tcp} handshake and \gls{http} header overhead, it is inefficient for small messages. WebSocket protocol aims to solve these problems without compromising security assumptions of the web.\cite{wiki:websocket}
 
-\subsection{Server Side Implementation}
-
-\par The Code Snippet \ref{code:server_socket}, it is implementation of Socket.IO on the application server. From line 1 to line 6, it is the initialization process of the Socket.IO on Node.js. At line 4, it means that when the client binds with the application server through WebSocket, the listener start in handler function \textit{\_handlerSocket()}. The WebSocket channels and usages are shown in Table \ref{tab:websocket}.
-
 \begin{table}
 \caption{\label{tab:websocket}: Socket.IO Listening Channels in Code Snippet \ref{code:server_socket}}
 \centering
@@ -425,6 +462,10 @@ angular.module('webrtcDemo.services').
  disconnect & * &  Web application client disconnects from the application server\\ \hline
 \end{tabular} 
 \end{table}
+
+\subsection{Server Side Implementation}
+
+\par The Code Snippet \ref{code:server_socket}, it is implementation of Socket.IO on the application server. From line 1 to line 6, it is the initialization process of the Socket.IO on Node.js. At line 4, it means that when the client binds with the application server through WebSocket, the listener start in handler function \textit{\_handlerSocket()}. The WebSocket channels and usages are shown in Table \ref{tab:websocket}.
 
 \par At line 11 in Code Snippet \ref{code:server_socket}, \textit{socket} object is created by the Socket.IO framework whenever one client connects with the server through WebSocket. The \textit{listener} function is implemented in the same pattern in \textit{socket.on()}. There are two arguments taken by this function. The first one is the channel name, at line 11, it is \textit{sip}, and second argument is callback function when this channel got any socket message. This callback function also takes one argument which is the message data sent by the client.
 
@@ -569,7 +610,7 @@ function _handlerSip(){
   	\label{fig:sip2xms}
 \end{figure}
 
-\par The rest of the interfaces for XMS media server on application server are similar with \textit{createXMSCall()} interface. \textit{joinXMSCall()} interface is made for single call resource join with another single call resource, it is used when a \gls{webrtc} call resource join a \gls{sip} call resource for single pair conversation in the prototype system. \textit{updateLocalSDP()} is made to update the \gls{sdp} of specific call resource on the XMS media server, but it does not work well against the current XMS media server when the \gls{webrtc} call resource is made without \gls{sdp} during the test and development. For this reason, the prototype application server can not use the normal process shown in Figure \ref{fig:sip2xms} when application server got a \gls{sip} \textit{INVITE} message. During the test, after creating the \gls{webrtc} call resource on XMS media server without \gls{sdp} and updating it later with the browser client answer \gls{sdp}, browser client fails to connect with the call resource on XMS media server in the \gls{rtp} session. To fix that, the application does the same process for the \gls{webrtc} part as the process shown in Figure \ref{fig:webrtc2xms}. It means that no matter the \gls{webrtc} client is a receiver or a sender of the call request during the establishment, for \gls{webrtc} client itself will treat itself as a sender all the time, then the application server can always get the correct \gls{sdp} from the client to create the \gls{webrtc} call resource on XMS media server. This implementation of fixing solution is based on the WebSocket channels \textit{answer} and \textit{answerInvite} for both client side and server side Soket.IO code blocks with the \textit{self} flag value to see if the client is sender or receiver of the \textit{INVITE} message. This issue is reported to Dialogic team, hope it will be resolved in the future version of XMS media server.
+\par The rest of the interfaces for XMS media server on application server are similar with \textit{createXMSCall()} interface. \textit{joinXMSCall()} interface is made for single call resource join with another single call resource, it is used when a \gls{webrtc} call resource join a \gls{sip} call resource for single pair conversation in the prototype system. \textit{updateLocalSDP()} is made to update the \gls{sdp} of specific call resource on the XMS media server, but it does not work well against the current XMS media server when the \gls{webrtc} call resource is made without \gls{sdp} during the test and development. For this reason, the prototype application server can not use the normal process shown in Figure \ref{fig:sip2xms} when application server got a \gls{sip} \textit{INVITE} message. During the test, after creating the \gls{webrtc} call resource on XMS media server without \gls{sdp} and updating it later with the browser client answer \gls{sdp}, browser client fails to connect with the call resource on XMS media server in the \gls{rtp} session. To fix that, the application does the same process for the \gls{webrtc} part as the process shown in Figure \ref{fig:chrome2xms}. It means that no matter the \gls{webrtc} client is a receiver or a sender of the call request during the establishment, for \gls{webrtc} client itself will treat itself as a sender all the time, then the application server can always get the correct \gls{sdp} from the client to create the \gls{webrtc} call resource on XMS media server. This implementation of fixing solution is based on the WebSocket channels \textit{answer} and \textit{answerInvite} for both client side and server side Soket.IO code blocks with the \textit{self} flag value to see if the client is sender or receiver of the \textit{INVITE} message. This issue is reported to Dialogic team, hope it will be resolved in the future version of XMS media server.
 
 \par \textit{createConference()} and \textit{joinConference()} are the corresponding interfaces against \textit{createXMSCall()} and \textit{joinXMSCall()}, they are made for conference resources usage on XMS media server. \textit{deleteXMSCall()} and \textit{deleteXMSConference()} are the delete functions for call resources and conference resources on XMS media server.
 

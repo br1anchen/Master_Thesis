@@ -170,4 +170,9 @@ onCandidate.listen((message) {
 
 \par After implemented one test application by Mobicents \gls{sip} Servlets framework, it is hard for developer to program the lower level source codes, for example \gls{sip} message headers field modification and WebSocket transport template. The test application successes to set up conversation session between \gls{webrtc} browser client and \gls{sip} client. But when the media stream exchange on XMS server(media server), there is only one way audio(from browser to phone) in the conversation. But the \gls{sip} transport layer is encapsulated in the Mobicents \gls{sip} Servlets framework, it is hard to modify it in order to do more test if the bug is in the transport layer of the framework. The source code of this test application is owned by Gintel AS.
 
-\par To sum up, the prototype system will use Node.js as server side back-end to communicate with AngularJs client application on Socket.IO protocol.
+\section{Implementation Framework Conclusion}
+
+\noindent To sum up, the prototype system will use Node.js as server side back-end to communicate with AngularJs client application on Socket.IO protocol.
+
+\par The basic set up for the prototype system is the web service on Node.js(v0.10.25). It hosts a web application client implemented by AngularJs and Socket.IO(0.9.16). The prototype development is programed and debugged on Macintosh machine. The programming language used on both client and server side is Javascript. The other component in the prototype system, XMS media server is host on a PC laptop(Dell Latitude E6410), it has Intel Core i7 processor, 4GB DDR3 RAM and 250GB 7200RPM hard drive.
+
