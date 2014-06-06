@@ -19,9 +19,61 @@
 
 \noindent The main focus of this thesis is to research about how to make an unified communication system with \gls{webrtc} technology. The approach to this goal will be studies about \gls{webrtc} and its commercial usage and also the prototype implementation to verify the prototype system design and some ideas about the way to implement this unified communication system. The approach for this goal in the thesis is to implement the prototype system and demo tests to understand the different solutions and analysis their advantages and disadvantages.
 
+\par To achieve the goal of this thesis, the research progress will be under the Spiral development\footnote{The spiral model is a risk-driven process model generator for software projects. Based on the unique risk patterns of a given project, the spiral model guides a team to adopt elements of one or more process models, such as incremental, waterfall, or evolutionary prototyping.\cite{wiki:spiral}} and Prototyping\footnote{Software prototyping, refers to the activity of creating prototypes of software applications, i.e., incomplete versions of the software program being developed. It is an activity that can occur in software development and is comparable to prototyping as known from other fields, such as mechanical engineering or manufacturing.
+A prototype typically simulates only a few aspects of, and may be completely different from, the final product.\cite{wiki:prototyping}} software development methodology. 
+
+\par The reason to use these two software development methodologies is that this thesis is a single person project and the goal of this thesis is to figure out how to integrate one technology to exist business market. Then the Scrum development method\footnote{Scrum is an iterative and incremental agile software development framework for managing software projects and product or application development. It defines "a flexible, holistic product development strategy where a development team works as a unit to reach a common goal". It challenges assumptions of the "traditional, sequential approach" to product development. Scrum enables teams to self-organize by encouraging physical co-location or close online collaboration of all team members and daily face-to-face communication among all team members and disciplines in the project.\cite{wiki:scrum}} is not suitable for one person project since it causes too much time to discuss problem with others to get feedback and also it will cause too much plan than the research or development work load. There will not be too much continues user interaction during the research and development then it is not suitable to use Rapid application development in this thesis.
+
+\subsection{Spiral Development}
+
+\par Because the target network for unified communication solution is telephony network which requires high stability in the real live, using risk-driven process model like Spiral development is quite suitable in this thesis. The basic Spiral development model is shown in Figure \ref{fig:spiral}.
+
+\begin{figure}
+	\centering
+    	\includegraphics[width=0.70\textwidth,natwidth=610,natheight=642]{figs/Spiral_model.png}
+  	\caption{Spiral Development Model}
+  	\label{fig:spiral}
+\end{figure}
+
+\noindent The basic principles of Spiral Development are shown below\cite{wiki:software_method}:
+
+\begin{itemize}[topsep=-1em,parsep=0em,itemsep=0em]
+    \item Focus is on risk assessment and on minimizing project risk by breaking a project into smaller segments and providing more ease-of-change during the development process, as well as providing the opportunity to evaluate risks and weigh consideration of project continuation throughout the life cycle.
+    \item "Each cycle involves a progression through the same sequence of steps, for each part of the product and for each of its levels of elaboration, from an overall concept-of-operation document down to the coding of each individual program."
+    \item Each trip around the spiral traverses four basic quadrants: (1) determine objectives, alternatives, and constraints of the iteration; (2) evaluate alternatives; Identify and resolve risks; (3) develop and verify deliverables from the iteration; and (4) plan the next iteration.
+    \item Begin each cycle with an identification of stakeholders and their win conditions, and end each cycle with review and commitment.
+\end{itemize}
+
+\par Like which is shown in the Figure \ref{fig:spiral}, there are four steps in each development circle. Considering the objective of the thesis, there will be several development circle regarding to the functionality of the unified communication solution for the prototype system. They are shown in the below Table \ref{tab:spiral}(Most of the evaluation and implementation explanation will be hold in later Chapters).
+
+\begin{table}
+\caption{\label{tab:spiral}: Unified Communication Solution Spiral Model}
+\centering
+\begin{tabular}{| p{5cm} | c | p{5cm} |}
+\hline
+Function & Risk Level & Evaluation Method \\ \hline
+\gls{webrtc} Conversation & Low & Implement basic \gls{webrtc} with different frameworks\\ \hline
+\gls{webrtc} with \gls{sip} conversation & Low & Research with different solutions in demo tests \\ \hline
+\gls{webrtc} DataChannel & High & Research about \gls{webrtc} DataChannel Usage on XMS Server \\ \hline
+Rich Multimedia Conversation & Low & Implement basic real time communication functions to test \\ \hline
+\gls{webrtc} Browser Compatibility & Medium & Implementation tests on different browsers \\ \hline
+Advanced Real-time Conversation Functions & Medium & Research and implementation tests on some advanced real time conversation functions \\
+\hline
+\end{tabular} 
+\end{table}
+
+
+\par During the prototype system development in this thesis, the risk of each function implementation is how the functionality will be integrated with telephony network in \gls{webrtc}. There are some advanced \gls{webrtc} technology which are difficult and high risk to cause more problem than the benefits of the prototype system during the development. They will be addressed during the Chapter \ref{chp:sys_design} and Chapter \ref{chp:future_work} to explain the reason why they got dropped from the prototype system and how these functions can be implemented in the fureture.
+
+\par In the Table \ref{tab:spiral}, the order of the function lists are the same development circle order during the prototype system implementation and research of the thesis's topic. They are from the basic function which is higher priority to lower. Considering the risk level to the exist telephony \gls{voip} network and the evaluation result, some of them will not be include in the final prototype system of the thesis. But all of them are going through the four steps of Spiral development model, first to analysis the function requirement, second to evaluate the possible solution to implement the function, third to make some demo tests or prototype implementation in order to get feedback, at last to decide if this function can be included in the prototype system and plan for next function implementation.
+
+\subsection{Prototyping}
+
+\par Prototyping has several benefits: The software designer and implementer can get valuable feedback from the users early in the project. The client and the contractor can compare if the software made matches the software specification, according to which the software program is built. It also allows the software engineer some insight into the accuracy of initial project estimates and whether the deadlines and milestones proposed can be successfully met. The degree of completeness and the techniques used in the prototyping have been in development and debate since its proposal in the early 1970s.\cite{wiki:prototyping}
+
 \par There will be different case studies and implementation solution demo testing in the thesis. They are helping the research about the unified communication solution. Besides the understanding and analysis on the demo testing and case studies, the prototype system implementation will give more feedback and future approach to finalize the unified communication system.
 
-\par Although there will software application development for prototype system in this thesis, the design about the application logic of the software development will not be included in this thesis.
+\par The prototyping in each development circle of Spiral development module will be shown to some pilot testers during the implementation process. Some feedback from the pilot testers will be considered as part of the evaluation result. Although there will software application development for prototype system in this thesis, the design about the application logic of the software development will not be included in this thesis because it is not the main objective of the topic.
 
 \par The decision of the prototype system implementation method is based on the comparison of different implementation solutions in the Chapter \ref{chp:sys_design}. All the comparison of these implementation solutions are made based on the demo testing in these different solutions.
 
