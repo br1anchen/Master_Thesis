@@ -1,9 +1,11 @@
-\chapter{Future Work}
+\chapter{Discussion and Conclusion}
 \label{chp:future_work}
 
-\noindent In this Chapter, there are some future improvements for the prototype system will be discussed. And some future research directions of \gls{webrtc} integrated with traditional telephony network will be include as well.
+\noindent In this Chapter, there are some future improvements discussion for the prototype system will be discussed. And some future research directions of \gls{webrtc} integrated with traditional telephony network will be include as well.
 
-\section{RTCDataChannel usage}
+\section{Future Work}
+
+\subsection{RTCDataChannel usage}
 
 \par The \textit{RTCDataChannel} \gls{api} enables peer-to-peer exchange of arbitrary data, with low latency and high throughput.The API has several features to make the most of \textit{RTCPeerConnection} and enable powerful and flexible peer-to-peer communication\cite{html5rock:webrtc}:
 
@@ -24,13 +26,13 @@ is not necessary active during the whole time of application using, they are pos
 
 \par The other solution will be using third party peer to peer sharing services, such as Sharefest\footnote{One-To-Many sharing application. Serverless. Eliminates the need to fully upload your file to services such as Dropbox or Google Drive. Put your file and start sharing immediately with anyone that enters the page. Pure javascript-based. No plugins needed thanks to HTML5 WebRTC Data Channel API}. It operates on a mesh network similar to Bit-torrent network. The main difference is that currently the peers are coordinated using an intelligent server. This coordinator controls which parts are sent from A to B and who shall talk with whom. Peer5(\url{http://peer5.com/}) Coordinator (or any other solution) is used to accomplish this. Each peer will connect to few other peers in order to maximize the distribution of the file.\cite{github:sharefest} In this case the client will still keep having single \textit{RTCPeerConnection} with the \textit{RTCDataChannel} on the client, it will fit the work scenario of the prototype system.
 
-\section{Browser Compatibility}
+\subsection{Browser Compatibility}
 
 \par The prototype system is developed on a single browser (Google Chrome), it is not tested on other browser. The main reason is that the bug fixing for cross browser platform on \gls{webrtc} is too complicated and changed a lot during the development. Since \gls{webrtc} is not standard Web \gls{api} yet, all the browsers have their own implementation. Although most of the \gls{webrtc} \gls{api}s used in the application layer are more or less the same, the issues happen in different ways and they are hard to debug.
 
 \par Fortunately, Google provides the \textit{adapter.js} script for developers to solve the cross platform issue on Google Chrome and Firefox. It is implemented in WebRTCService in prototype application client. During the test, it still happens some compatibility issues between Google Chrome and Firefox. Current version of prototype system is working fine on both Google Chrome and Firefox browser. However, there are some problem when call is made from Firefox to Google Chrome, from Google Chrome to Firefox works. The main reason for that, it is the \gls{sdp} content generated on both platform is not compatible in this work scenario. This issue need to be fixed in the future work.
 
-\section{Media Server Performance}
+\subsection{Media Server Performance}
 
 \par During the test of the prototype system, the XMS media server performance is quite concerned in the work scenario. The main reason is that the current XMS media server host on a normal laptop machine, it is not powerful enough for high traffic load of the media stream exchange.
 
@@ -38,7 +40,7 @@ is not necessary active during the whole time of application using, they are pos
 
 \par As a result, the performance of the media server need to be considered as the cost of media server deployment and distribution together.
 
-\section{Object RTC (ORTC) API for WebRTC}
+\subsection{Object RTC (ORTC) API for WebRTC}
 
 \par \gls{ortc} is a free, open project that enables mobile endpoints to talk to servers and web browsers with \gls{rtc} capabilities via native and simple Javascript APIs. The Object RTC components are being optimized to best serve this purpose.\cite{website:ortc} The mission of \gls{ortc} is to enable rich, high quality, RTC applications to be developed in mobile endpoints and servers via native toolkits, simple Javascript APIs and HTML5. It is also a mandate that Object RTC be compatible with WebRTC.
 
@@ -48,7 +50,7 @@ is not necessary active during the whole time of application using, they are pos
 
 \par If we look at the success of apps like Whatsapp\footnote{WhatsApp Messenger is a proprietary, cross-platform instant messaging subscription service for smartphones that uses the internet for communication. In addition to text messaging, users can send each other images, video, and audio media messages as well as their location using integrated mapping features.} , Tango\footnote{Tango is third-party, cross platform messaging application software for smartphones developed by TangoME, Inc.} , Viber\footnote{Viber is a proprietary cross-platform instant messaging voice-over-Internet Protocol application for smartphones developed by Viber Media.}, Voxer\footnote{Voxer is a San Francisco based mobile app development company most well known for its free Voxer Walkie Talkie app for smartphones.}, Facebook Messenger\footnote{Facebook Messenger is an instant messaging service and software application which provides text and voice communication. Integrated with Facebook's web-based Chat feature and built on the open MQTT protocol,Messenger lets Facebook users chat with friends both on mobile and on the main website.} etc these are all \gls{ott} applications that have already won in mobile communications. Placing a phone call, is nearly the last thing a teen or twenty-something user is looking to do with their phone nowadays.\cite{web:ott_com} If the concept of \gls{ortc} has been widely spread and implemented, \gls{webrtc} and \gls{ortc} will become the next generation telecommunication network.
 
-\section{Advanced function for telecommunication}
+\subsection{Advanced function for telecommunication}
 
 \par Since the prototype system bridges the web network and telecommunication network, it is easy to think about how to implement powerful web technology with the telephony use case. For example real time translation in speaking. Translator.js is a JavaScript library built on top of Google Speech-Recognition \& Translation API to transcript and translate voice and text. It supports many locales and brings globalization in \gls{webrtc}.\cite{github:translatorjs} It uses Google Speech-Recognition \gls{api} to convert user spoken sentence into text string, then uses Google's Non-Official Translation \gls{api} to translate the text into target language text and use \textit{meSpeak.js} library to play text using a robot voice.
 
@@ -56,3 +58,14 @@ is not necessary active during the whole time of application using, they are pos
 
 \par Furthermore, with the voice recognization on the web, it is possible to make any useful command through the video/audio conference. For example, one of users want other people to send an E-mail with some attachments to him and mentioned it during the conversation. Then the other user's application will recognize the command and generate the E-mail content at the same time and add the files from the computer as attachments. It will make the normal conference meeting more efficient and less misunderstanding and better for reminding.
 
+\section{Conclusion}
+
+\par Considering about the research of this thesis and the prototype system, it is clearly that the unified communication service with \gls{webrtc} is a promising concept in the telecommunication industry. The functions provided by prototype system will rich the traditional telephony service for users. The objective of this thesis is achieved by the prototype system, the prototype system can provide an unified communication service based on \gls{webrtc} and \gls{sip}.
+
+\par The advantage of prototype system is that it does not require users to install any application client and it is no need for users to have another user credential for this service (prototype system uses telephone number as user credential). Moreover, this unified communication service is server centralized system, it will have more advanced real time communication functions can be implemented on both server side and client side. In this system architecture, there is more space for developers to add more advanced functions and it is easier for scaling for larger user base.
+
+\par Because the prototype system is based on \gls{webrtc}, it means that it is highly dependent on web browser client. More advanced concept about unified communication service would be implementing \gls{ott} real time communication. It will either require the mobile browsers on the smart phones implemented for \gls{webrtc} standard or \gls{webrtc} can be implemented on different mobile operation platform as native \gls{api}. Afterwards, there will be more devices can use prototype system to have rich real time communication service between mobile phone users and computer users. Therefore, current application client of the prototype system is based on browser client. The compatible devices which can use the application client are \gls{webrtc} supported browsers. Because there are not so many mobile browsers support \gls{webrtc} yet, then the user clients to use the prototype application are computer clients only, there are more potential users on the mobile platform.
+
+\par The performance of the prototype system needs to be concerned in the future work because it is hard to evaluate the performance under small group of users and poor server machines. Although the prototype system is not production project, it is still deployed on the public network to test the network issues on the real working scenario. The reason of this thesis implemented prototype system deployment is because there are many feedback about network firewall issues mentioned in other \gls{webrtc} web service. It is critical to test the deployment of the prototype system to avoid later big changes for the network architecture because the network problem. The result of the prototype system deployment is verified that the prototype network architecture is a good solution in the working scenario.
+
+\par Furthermore, there is no commercial products to provide unified communication service based on \gls{webrtc} and \gls{sip}. There are many potential usage of the prototype system integrated with other popular web service in different industry area. And the bridge to connect the web world and telephony work is the prototype system service. The unified communication service will be the big game changing for the web communication and telephony communication business.
